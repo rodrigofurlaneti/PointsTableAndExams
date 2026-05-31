@@ -13,9 +13,10 @@ Sistema completo para controle diário de pontos alimentares e gerenciamento de 
 - [Estrutura de Pastas](#estrutura-de-pastas)
 - [Padrões e Princípios](#padrões-e-princípios)
 - [Camadas da API](#camadas-da-api)
+- [Frontend](#frontend)
 - [Testes](#testes)
 - [Como Executar](#como-executar)
-- [Endpoints](#endpoints)
+- [Decisões Arquiteturais](#decisões-arquiteturais)
 
 ---
 
@@ -60,6 +61,22 @@ O **PointsTableAndExams** é uma plataforma que permite:
 | **Microsoft.AspNetCore.Mvc.Testing** | 9.0 | WebApplicationFactory |
 | **Reqnroll** | 3.0 | BDD / Gherkin (SpecFlow successor) |
 | **Microsoft.Playwright** | 1.52 | Testes E2E |
+
+### Frontend
+
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| **React** | 19 | Framework de UI |
+| **TypeScript** | 6 (strict) | Tipagem estática, zero `any` |
+| **Vite** | 8 | Build tool + HMR |
+| **React Router** | 7 | Roteamento SPA com layout routes |
+| **TanStack Query** | 5 | Server state, cache, mutations |
+| **Zustand** | 5 | Client state (auth persisted) |
+| **React Hook Form** | 7 | Formulários performáticos |
+| **Zod** | 4 | Validação de schemas |
+| **Axios** | 1 | HTTP client + interceptors JWT |
+| **clsx** | 2 | Composição condicional de classes |
+| **CSS Modules** | — | Estilos escopados por componente |
 
 ### Base de Dados (SQL)
 
@@ -461,6 +478,190 @@ PATCH /api/exam-requests/{requestId}/items/{itemId}/complete  → Marca exame co
 
 ---
 
+## Frontend
+
+O frontend é uma **SPA React** que consome a API REST via JWT, construída com **Feature-Based Clean Architecture** — o equivalente visual do Clean Architecture do backend, organizado em fatias verticais por funcionalidade em vez de camadas horizontais.
+
+### Arquitetura Frontend
+
+```
+┌──────────────────────────────────────────────────────┐
+│                   design-system/                     │  ← Tokens CSS + Componentes reutilizáveis
+├──────────────────────────────────────────────────────┤
+│                      core/                           │  ← API client, Auth store, Router
+├──────────────────────────────────────────────────────┤
+│                    features/                         │  ← Fatias verticais por domínio
+│   ┌──────────┬─────────────┬───────────┬──────────┐  │
+│   │   auth   │  dashboard  │ food-log  │  exams   │  │
+│   │  api/    │   api/      │   api/    │   api/   │  │
+│   │  hooks/  │   hooks/    │   hooks/  │   hooks/ │  │
+│   │  pages/  │   pages/    │   pages/  │   pages/ │  │
+│   │  types/  │             │   types/  │   types/ │  │
+│   └──────────┴─────────────┴───────────┴──────────┘  │
+├──────────────────────────────────────────────────────┤
+│                    shared/                           │  ← Spinner, ErrorBoundary, hooks globais
+└──────────────────────────────────────────────────────┘
+```
+
+**Regra de dependência:** `features/` importa de `design-system/`, `core/` e `shared/`. Nunca entre features.
+
+### Design System — Estilo Apple
+
+O design system implementa fielmente o sistema visual da Apple: token único de cor de ação (`#0066cc`), tipografia SF Pro / system-ui com tracking negativo nas headlines, tiles alternados claro/escuro como divisores de seção, nav preta de 44px + sub-nav frosted-glass de 52px, e o único `box-shadow` do sistema reservado exclusivamente para imagens de produto.
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--color-primary` | `#0066cc` | Único acento — todo elemento interativo |
+| `--color-primary-on-dark` | `#2997ff` | Links em tiles escuros |
+| `--color-canvas` | `#ffffff` | Canvas principal |
+| `--color-canvas-parchment` | `#f5f5f7` | Tiles alternados, footer |
+| `--color-surface-tile-1` | `#272729` | Tile escuro primário |
+| `--color-surface-black` | `#000000` | Barra de nav global |
+| `--color-ink` | `#1d1d1f` | Texto em superfícies claras |
+| `--radius-pill` | `9999px` | CTAs primários, search input |
+| `--radius-lg` | `18px` | Cards utilitários |
+| `--shadow-product` | `rgba(0,0,0,0.22) 3px 5px 30px` | Apenas em renders de produto |
+
+**Escala tipográfica:**
+
+| Token CSS | Tamanho | Peso | Uso |
+|---|---|---|---|
+| `--text-hero-display` | 56px | 600 | Hero headline com tracking −0.28px |
+| `--text-display-lg` | 40px | 600 | Título de tile de produto |
+| `--text-display-md` | 34px | 600 | Cabeçalho de seção |
+| `--text-lead` | 28px | 400 | Subcopy de tile |
+| `--text-tagline` | 21px | 600 | Sub-nav, eyebrow |
+| `--text-body` | 17px | 400 | Parágrafo — 17px, não 16px |
+| `--text-caption` | 14px | 400 | Labels, botões utilitários |
+| `--text-nav-link` | 12px | 400 | Links da nav global |
+
+### Componentes do Design System
+
+| Componente | Variantes | Descrição |
+|---|---|---|
+| `Button` | `primary`, `secondary`, `dark`, `hero`, `pearl`, `icon` | Todos com `transform: scale(0.95)` no active |
+| `GlobalNav` | — | Barra preta 44px, sticky, colapsa em mobile |
+| `SubNav` | — | Frosted glass 52px abaixo da nav global |
+| `ProductTile` | `light`, `parchment`, `dark`, `dark2`, `dark3` | Tiles full-bleed sem border-radius |
+| `StoreCard` | — | Cards com border `hairline` + `radius-lg` |
+| `Input` | `pill`, `rect` | Input com label acessível + estado de erro |
+| `Footer` | — | Colunas de links com `line-height: 2.41` |
+
+### Estrutura de Pastas Frontend
+
+```
+2-FrontEnd/
+├── .env.example                          ← Copiar para .env.local
+├── vite.config.ts                        ← Proxy /api → backend :7001
+├── tsconfig.app.json                     ← strict: true, zero any
+└── src/
+    ├── main.tsx                          ← Monta tokens.css + global.css + App
+    ├── App.tsx                           ← QueryClientProvider + AppRouter
+    │
+    ├── design-system/
+    │   ├── tokens.css                    ← Todas as variáveis CSS (cores, tipo, espaço, raio)
+    │   ├── global.css                    ← Reset + base body
+    │   ├── tokens.ts                     ← Mirror TypeScript dos tokens
+    │   ├── index.ts                      ← Barrel export
+    │   └── components/
+    │       ├── Button/                   ← Button.tsx + Button.module.css
+    │       ├── Nav/                      ← GlobalNav + SubNav
+    │       ├── ProductTile/              ← ProductTile.tsx + module.css
+    │       ├── Card/                     ← StoreCard.tsx + module.css
+    │       ├── Input/                    ← Input.tsx + module.css
+    │       └── Footer/                  ← Footer.tsx + module.css
+    │
+    ├── core/
+    │   ├── api/
+    │   │   └── client.ts                ← Axios + interceptor Bearer + logout no 401
+    │   ├── auth/
+    │   │   ├── authStore.ts             ← Zustand com persist (localStorage)
+    │   │   └── ProtectedRoute.tsx       ← Redireciona para /login se não autenticado
+    │   ├── router/
+    │   │   └── AppRouter.tsx            ← Layout routes + lazy() em todas as pages
+    │   └── queryClient.ts              ← TanStack Query — staleTime 2min, retry 1
+    │
+    ├── features/
+    │   ├── auth/
+    │   │   ├── types/auth.types.ts      ← LoginRequest, RegisterRequest, AuthResponse
+    │   │   ├── api/authApi.ts           ← POST /auth/login, POST /auth/register
+    │   │   ├── hooks/useLogin.ts        ← useMutation → setAuth → redirect
+    │   │   ├── hooks/useRegister.ts     ← useMutation → setAuth → /dashboard
+    │   │   ├── pages/LoginPage.tsx      ← Card centralizado, RHF + Zod
+    │   │   └── pages/RegisterPage.tsx   ← Formulário completo com seleção de gênero
+    │   │
+    │   ├── dashboard/
+    │   │   ├── api/dashboardApi.ts      ← GET /users/me/summary
+    │   │   ├── hooks/useDashboard.ts    ← useQuery com queryKey
+    │   │   └── pages/DashboardPage.tsx  ← Hero escuro + stats cards + quick actions
+    │   │
+    │   ├── food-log/
+    │   │   ├── types/foodLog.types.ts   ← DailyLog, DailyLogItem, FoodItem, etc.
+    │   │   ├── api/foodLogApi.ts        ← GET today, POST item, DELETE item, history
+    │   │   ├── hooks/useFoodLog.ts      ← useTodayLog, useAddLogItem, useRemoveLogItem
+    │   │   ├── pages/FoodLogPage.tsx    ← Painel de adição + lista de itens do dia
+    │   │   └── pages/FoodLogHistoryPage.tsx ← Histórico de pontos por dia
+    │   │
+    │   └── exams/
+    │       ├── types/exams.types.ts     ← ExamRequest, ExamRequestItem, Exam, etc.
+    │       ├── api/examsApi.ts          ← GET requests, POST request, PATCH item
+    │       ├── hooks/useExams.ts        ← useMyExamRequests, useCreateExamRequest, etc.
+    │       ├── pages/ExamsPage.tsx      ← Lista de solicitações + marcar como feito
+    │       └── pages/ExamRequestPage.tsx ← Seleção de exames por categoria + criar request
+    │
+    └── shared/
+        └── components/
+            ├── Spinner.tsx              ← Spinner acessível com role="status"
+            └── Spinner.module.css
+```
+
+### Fluxo de Autenticação Frontend
+
+```
+Usuário acessa rota protegida
+        │
+        ▼
+  ProtectedRoute
+        │ isAuthenticated? (Zustand)
+        ├── NÃO → <Navigate to="/login" state={{ from }} />
+        └── SIM → <Outlet /> (renderiza a page)
+
+Login bem-sucedido
+        │
+        ▼
+  useLogin (useMutation)
+        │ authApi.login(credentials)
+        ▼
+  API retorna { token, user }
+        │
+        ▼
+  authStore.setAuth(token, user)  ← persiste no localStorage
+        │
+        ▼
+  navigate(from || '/dashboard')
+
+Toda requisição Axios
+        │
+        ▼
+  request interceptor
+        │ injeta: Authorization: Bearer <token>
+        ▼
+  response interceptor
+        │ status 401? → authStore.logout() + redirect /login
+```
+
+### Responsividade
+
+| Breakpoint | Largura | Comportamento |
+|---|---|---|
+| Small phone | ≤ 419px | Hero title: 28px; tiles single-column; padding: 48px |
+| Phone | 420–640px | Hero title: 34px; grids: 1 coluna |
+| Tablet | 640–834px | Nav global colapsa; grids: 2 colunas |
+| Desktop sm | 834–1068px | Layout completo; grids: 3 colunas |
+| Desktop | > 1068px | Máx. conteúdo 980px; grids: 4–5 colunas |
+
+---
+
 ## Testes
 
 ### Executar Testes Unitários
@@ -497,11 +698,19 @@ dotnet test PointsTableAndExams.sln
 ## Como Executar
 
 ### Pré-requisitos
-- [.NET 9 SDK](https://dotnet.microsoft.com/download)
-- SQL Server 2019+ (ou Docker)
-- Docker (para testes de integração com Testcontainers)
 
-### 1. Configurar banco de dados
+| Ferramenta | Versão mínima | Link |
+|---|---|---|
+| .NET SDK | 9.0 | https://dotnet.microsoft.com/download |
+| Node.js | 18+ | https://nodejs.org |
+| SQL Server | 2019+ | ou Docker |
+| Docker | qualquer | para Testcontainers |
+
+---
+
+### Backend
+
+#### 1. Configurar banco de dados
 Execute os scripts na ordem em `1-Sql/`:
 ```sql
 -- No SQL Server Management Studio ou Azure Data Studio:
@@ -512,7 +721,7 @@ Execute os scripts na ordem em `1-Sql/`:
 -- 5. 05_Views_and_Useful_Queries.sql
 ```
 
-### 2. Configurar `appsettings.json`
+#### 2. Configurar `appsettings.json`
 ```json
 {
   "ConnectionStrings": {
@@ -527,20 +736,74 @@ Execute os scripts na ordem em `1-Sql/`:
 }
 ```
 
-### 3. Executar a API
+#### 3. Executar a API
 ```bash
 cd 3-BackEnd
 dotnet run --project src/PointsTableAndExams.Api
+# API disponível em: https://localhost:7001
 ```
 
-### 4. Acessar o Swagger
+#### 4. Acessar o Swagger
 ```
 https://localhost:7001/swagger
 ```
 
 ---
 
+### Frontend
+
+#### 1. Instalar dependências
+```bash
+cd 2-FrontEnd
+npm install
+```
+
+#### 2. Configurar variáveis de ambiente
+```bash
+cp .env.example .env.local
+```
+
+Editar `.env.local`:
+```env
+VITE_API_URL=https://localhost:7001/api
+```
+
+#### 3. Executar em desenvolvimento
+```bash
+npm run dev
+# Disponível em: http://localhost:5173
+```
+O dev server faz proxy de `/api` para `https://localhost:7001` automaticamente (configurado no `vite.config.ts`), então o frontend pode rodar em HTTP enquanto a API roda em HTTPS sem problemas de CORS.
+
+#### 4. Build para produção
+```bash
+npm run build
+# Artefatos em: 2-FrontEnd/dist/
+```
+
+#### 5. Preview do build
+```bash
+npm run preview
+# Preview em: http://localhost:4173
+```
+
+---
+
+### Usuários de exemplo (após executar `04_DML_Sample_Users.sql`)
+
+| Username | Senha | Nome |
+|---|---|---|
+| `ana.souza` | `password` | Ana Paula Souza |
+| `carlos.lima` | `password` | Carlos Henrique Lima |
+| `fernanda.c` | `password` | Fernanda Costa |
+
+> **Nota:** Os hashes no seed são ilustrativos (SHA-256 da string `"password"`). Em produção, gere hashes reais com BCrypt antes de inserir.
+
+---
+
 ## Decisões Arquiteturais
+
+### Backend
 
 | Decisão | Justificativa |
 |---|---|
@@ -554,6 +817,21 @@ https://localhost:7001/swagger
 | **Reqnroll** para BDD | SpecFlow successor oficial com suporte nativo ao .NET 9 |
 | **Testcontainers** para integração | Banco real em Docker, sem mocks frágeis de infra |
 
+### Frontend
+
+| Decisão | Justificativa |
+|---|---|
+| **Feature-Based Architecture** | Cada feature é uma fatia vertical autossuficiente — fácil de escalar, mover ou remover sem tocar outras features |
+| **TanStack Query para server state** | Cache automático, stale-while-revalidate, deduplificação de requests — elimina gerenciamento manual de loading/error |
+| **Zustand para client state** | API mínima sem boilerplate, colocação do estado próximo de quem usa, persisted middleware nativo |
+| **CSS Modules + CSS Custom Properties** | Zero runtime, tokens compartilhados via variáveis nativas do browser, estilos escopados sem conflito |
+| **React Router v7 com lazy()** | Code splitting automático por página, bundle inicial mínimo, layout routes evitam duplicação de UI |
+| **Axios com interceptors** | Injeção de Bearer token centralizada, logout automático no 401 sem lógica espalhada pelos hooks |
+| **React Hook Form + Zod** | Formulários uncontrolled (sem re-render por keystroke), validação com inferência de tipos end-to-end |
+| **Design System próprio (Apple-style)** | Tokens CSS como fonte única de verdade, componentes agnósticos de negócio, sistema de design escalável e documentado |
+| **Vite como build tool** | HMR nativo em ESM, build com esbuild (10-100× mais rápido que webpack), proxy de API integrado |
+| **TypeScript strict sem `any`** | Segurança de tipos do contrato da API até a UI, erros capturados em tempo de compilação |
+
 ---
 
-*Projeto desenvolvido com foco em qualidade de código, testabilidade e aderência às melhores práticas do ecossistema .NET.*
+*Projeto fullstack desenvolvido com foco em qualidade de código, testabilidade e aderência às melhores práticas dos ecossistemas .NET e React.*
