@@ -1,0 +1,75 @@
+import { Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Input } from '../../../design-system/components/Input/Input';
+import { Button } from '../../../design-system/components/Button/Button';
+import { useLogin } from '../hooks/useLogin';
+import styles from './LoginPage.module.css';
+
+const schema = z.object({
+  username: z.string().min(1, 'Username is required'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+type FormData = z.infer<typeof schema>;
+
+export default function LoginPage() {
+  const { mutate: login, isPending, error } = useLogin();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({ resolver: zodResolver(schema) });
+
+  const onSubmit = (data: FormData) => login(data);
+
+  const apiError = (error as { response?: { data?: { description?: string } } })
+    ?.response?.data?.description;
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <h1 className={styles.logo}>PT&amp;E</h1>
+          <p className={styles.subtitle}>Points Table &amp; Exams</p>
+        </div>
+
+        {apiError && (
+          <div className={styles.errorBanner} role="alert">
+            {apiError}
+          </div>
+        )}
+
+        <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Input
+            label="Username"
+            type="text"
+            autoComplete="username"
+            error={errors.username?.message}
+            {...register('username')}
+          />
+          <Input
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            error={errors.password?.message}
+            {...register('password')}
+          />
+
+          <div className={styles.actions}>
+            <Button type="submit" disabled={isPending} style={{ width: '100%' }}>
+              {isPending ? 'Signing in…' : 'Sign in'}
+            </Button>
+          </div>
+        </form>
+
+        <p className={styles.register}>
+          Don't have an account?{' '}
+          <Link to="/register">Create one</Link>
+        </p>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,84 @@
+import { Link } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Input } from '../../../design-system/components/Input/Input';
+import { Button } from '../../../design-system/components/Button/Button';
+import { useRegister } from '../hooks/useRegister';
+import styles from './LoginPage.module.css'; // reuse same card layout
+
+const schema = z.object({
+  fullName:    z.string().min(2, 'Full name is required'),
+  email:       z.string().email('Invalid email'),
+  phoneNumber: z.string().min(8, 'Phone number is required'),
+  username:    z.string().min(3, 'Username must be at least 3 characters'),
+  password:    z.string().min(8, 'Password must be at least 8 characters'),
+  birthDate:   z.string().min(1, 'Birth date is required'),
+  gender:      z.enum(['M', 'F', 'O'], { required_error: 'Gender is required' }),
+});
+
+type FormData = z.infer<typeof schema>;
+
+export default function RegisterPage() {
+  const { mutate: register_, isPending, error } = useRegister();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({ resolver: zodResolver(schema) });
+
+  const onSubmit = (data: FormData) => register_(data);
+
+  const apiError = (error as { response?: { data?: { description?: string } } })
+    ?.response?.data?.description;
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.card} style={{ maxWidth: 480 }}>
+        <div className={styles.header}>
+          <h1 className={styles.logo}>Create account</h1>
+          <p className={styles.subtitle}>Points Table &amp; Exams</p>
+        </div>
+
+        {apiError && (
+          <div className={styles.errorBanner} role="alert">{apiError}</div>
+        )}
+
+        <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Input label="Full name"    error={errors.fullName?.message}    {...register('fullName')} />
+          <Input label="Email"        type="email" error={errors.email?.message} {...register('email')} />
+          <Input label="Phone number" type="tel"   error={errors.phoneNumber?.message} {...register('phoneNumber')} />
+          <Input label="Username"     error={errors.username?.message}    {...register('username')} />
+          <Input label="Password"     type="password" error={errors.password?.message} {...register('password')} />
+          <Input label="Birth date"   type="date"  error={errors.birthDate?.message}  {...register('birthDate')} />
+
+          <div>
+            <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', letterSpacing: '-0.224px', display: 'block', marginBottom: 'var(--space-xxs)' }}>
+              Gender
+            </label>
+            <select
+              style={{ width: '100%', padding: '12px 20px', borderRadius: 'var(--radius-pill)', border: '1px solid rgba(0,0,0,0.08)', fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', color: 'var(--color-ink)', height: '44px', background: 'var(--color-canvas)' }}
+              {...register('gender')}
+              aria-invalid={!!errors.gender}
+            >
+              <option value="">Select…</option>
+              <option value="F">Female</option>
+              <option value="M">Male</option>
+              <option value="O">Other</option>
+            </select>
+            {errors.gender && <p style={{ color: '#d70015', fontSize: 'var(--text-caption)', marginTop: 4 }}>{errors.gender.message}</p>}
+          </div>
+
+          <Button type="submit" disabled={isPending} style={{ width: '100%' }}>
+            {isPending ? 'Creating account…' : 'Create account'}
+          </Button>
+        </form>
+
+        <p className={styles.register}>
+          Already have an account? <Link to="/login">Sign in</Link>
+        </p>
+      </div>
+    </div>
+  );
+}
