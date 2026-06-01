@@ -31,19 +31,19 @@ GO
 -- CATEGORY ID VARIABLES
 -- ============================================================
 DECLARE
-    @catVeg         INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Vegetables'),
-    @catLeg         INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Legumes'),
-    @catMeat        INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Meats'),
-    @catCheese      INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Cheeses'),
-    @catGrains      INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Grains and Starches'),
-    @catFruits      INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Fruits'),
-    @catSnacks      INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Fast Food / Snacks'),
-    @catSweetLow    INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Fat-Free Sweets'),
-    @catSweetHigh   INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'High-Fat Sweets'),
-    @catCond        INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Condiments'),
-    @catOther       INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Others'),
-    @catBev         INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Beverages'),
-    @catSoup        INT = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Soups');
+    @catVeg         UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Vegetables'),
+    @catLeg         UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Legumes'),
+    @catMeat        UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Meats'),
+    @catCheese      UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Cheeses'),
+    @catGrains      UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Grains and Starches'),
+    @catFruits      UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Fruits'),
+    @catSnacks      UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Fast Food / Snacks'),
+    @catSweetLow    UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Fat-Free Sweets'),
+    @catSweetHigh   UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'High-Fat Sweets'),
+    @catCond        UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Condiments'),
+    @catOther       UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Others'),
+    @catBev         UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Beverages'),
+    @catSoup        UNIQUEIDENTIFIER = (SELECT Id FROM dbo.FoodCategory WHERE Name = 'Soups');
 
 -- ============================================================
 -- 1. VEGETABLES (0 points — free)

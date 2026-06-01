@@ -8,7 +8,7 @@ import { useLogin } from '../hooks/useLogin';
 import styles from './LoginPage.module.css';
 
 const schema = z.object({
-  username: z.string().min(1, 'Username is required'),
+  usernameOrEmail: z.string().min(1, 'Username or email is required'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -44,11 +44,11 @@ export default function LoginPage() {
 
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
           <Input
-            label="Username"
+            label="Username or Email"
             type="text"
             autoComplete="username"
-            error={errors.username?.message}
-            {...register('username')}
+            error={errors.usernameOrEmail?.message}
+            {...register('usernameOrEmail')}
           />
           <Input
             label="Password"

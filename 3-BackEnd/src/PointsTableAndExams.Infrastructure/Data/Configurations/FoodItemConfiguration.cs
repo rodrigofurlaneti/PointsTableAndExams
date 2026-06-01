@@ -17,6 +17,7 @@ public sealed class FoodItemConfiguration : IEntityTypeConfiguration<FoodItem>
         builder.OwnsOne(f => f.Points, p =>
             p.Property(x => x.Value).HasColumnName("Points").IsRequired());
 
+        // Relationship configured in FoodCategoryConfiguration
         builder.HasOne(f => f.Category)
             .WithMany(c => c.Items)
             .HasForeignKey(f => f.FoodCategoryId)

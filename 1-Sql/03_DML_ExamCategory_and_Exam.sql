@@ -30,18 +30,18 @@ GO
 -- CATEGORY ID VARIABLES
 -- ============================================================
 DECLARE
-    @catBioch   INT = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Biochemistry (Blood)'),
-    @catImuno   INT = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Immunology'),
-    @catHepat   INT = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Hepatitis Serology'),
-    @catHIV     INT = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'HIV Serology'),
-    @catANA     INT = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Antinuclear Antibodies'),
-    @catCRP     INT = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'C-Reactive Protein (CRP)'),
-    @catTumor   INT = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Tumor Markers'),
-    @catStool   INT = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Stool'),
-    @catUrine   INT = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Urine'),
-    @catHemat   INT = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Hematology'),
-    @catHorm    INT = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Hormones'),
-    @catThyroid INT = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Thyroid');
+    @catBioch   UNIQUEIDENTIFIER = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Biochemistry (Blood)'),
+    @catImuno   UNIQUEIDENTIFIER = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Immunology'),
+    @catHepat   UNIQUEIDENTIFIER = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Hepatitis Serology'),
+    @catHIV     UNIQUEIDENTIFIER = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'HIV Serology'),
+    @catANA     UNIQUEIDENTIFIER = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Antinuclear Antibodies'),
+    @catCRP     UNIQUEIDENTIFIER = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'C-Reactive Protein (CRP)'),
+    @catTumor   UNIQUEIDENTIFIER = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Tumor Markers'),
+    @catStool   UNIQUEIDENTIFIER = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Stool'),
+    @catUrine   UNIQUEIDENTIFIER = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Urine'),
+    @catHemat   UNIQUEIDENTIFIER = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Hematology'),
+    @catHorm    UNIQUEIDENTIFIER = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Hormones'),
+    @catThyroid UNIQUEIDENTIFIER = (SELECT Id FROM dbo.ExamCategory WHERE Name = 'Thyroid');
 
 -- ============================================================
 -- 1. BIOCHEMISTRY (BLOOD)

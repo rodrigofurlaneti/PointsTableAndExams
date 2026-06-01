@@ -1,5 +1,5 @@
 export interface LoginRequest {
-  username: string;
+  usernameOrEmail: string;
   password: string;
 }
 
@@ -10,7 +10,7 @@ export interface RegisterRequest {
   username: string;
   password: string;
   birthDate: string;     // ISO date
-  gender: 'M' | 'F' | 'O';
+  gender: 0 | 1 | 2;   // 0 = Female, 1 = Male, 2 = Other
 }
 
 export interface AuthResponse {

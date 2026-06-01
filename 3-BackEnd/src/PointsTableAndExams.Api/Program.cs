@@ -61,7 +61,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("FrontendPolicy");
-app.UseHttpsRedirection();
+
+// Só redireciona HTTPS em produção — em dev o frontend usa HTTP
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
