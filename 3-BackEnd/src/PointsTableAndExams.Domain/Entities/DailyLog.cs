@@ -1,4 +1,4 @@
-using PointsTableAndExams.Domain.Common;
+﻿using PointsTableAndExams.Domain.Common;
 using PointsTableAndExams.Domain.DomainEvents;
 using PointsTableAndExams.Domain.Exceptions;
 using PointsTableAndExams.Domain.ValueObjects;
@@ -31,7 +31,7 @@ public sealed class DailyLog : AggregateRoot
             Notes = notes?.Trim()
         };
 
-        log.SetCreatedAt(DateTime.UtcNow);
+        log.SetCreatedAt(DateTime.Now);
         log.RaiseDomainEvent(DailyLogCreatedEvent.Create(log.Id, userId, date));
 
         return log;
@@ -48,7 +48,7 @@ public sealed class DailyLog : AggregateRoot
         var item = DailyLogItem.Create(Id, foodItemId, quantity, pointsPerServing, mealTime, notes);
         _items.Add(item);
         RecalculateTotal();
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now);
         return item;
     }
 
@@ -58,13 +58,13 @@ public sealed class DailyLog : AggregateRoot
             ?? throw new DomainException($"Item {itemId} not found in this log.");
         _items.Remove(item);
         RecalculateTotal();
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now);
     }
 
     public void UpdateNotes(string? notes)
     {
         Notes = notes?.Trim();
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now);
     }
 
     private void RecalculateTotal() =>

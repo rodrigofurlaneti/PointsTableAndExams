@@ -1,4 +1,4 @@
-using PointsTableAndExams.Domain.Common;
+﻿using PointsTableAndExams.Domain.Common;
 using PointsTableAndExams.Domain.Exceptions;
 
 namespace PointsTableAndExams.Domain.Entities;
@@ -29,6 +29,6 @@ public sealed class ExamRequestItem : Entity
         CompletedDate = completedDate;
         Result = result?.Trim();
         Laboratory = laboratory?.Trim();
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now);
     }
 }

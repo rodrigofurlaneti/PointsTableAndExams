@@ -1,4 +1,4 @@
-using PointsTableAndExams.Domain.Common;
+﻿using PointsTableAndExams.Domain.Common;
 using PointsTableAndExams.Domain.DomainEvents;
 using PointsTableAndExams.Domain.Enums;
 using PointsTableAndExams.Domain.Exceptions;
@@ -49,7 +49,7 @@ public sealed class User : AggregateRoot
             IsActive = true
         };
 
-        user.SetCreatedAt(DateTime.UtcNow);
+        user.SetCreatedAt(DateTime.Now);
         user.RaiseDomainEvent(UserCreatedEvent.Create(user.Id, user.Email.Value));
 
         return user;
@@ -63,7 +63,7 @@ public sealed class User : AggregateRoot
         FullName = fullName.Trim();
         PhoneNumber = phoneNumber is not null ? ValueObjects.PhoneNumber.Create(phoneNumber) : null;
         BirthDate = birthDate;
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now);
     }
 
     public void ChangePassword(string newPasswordHash)
@@ -71,9 +71,9 @@ public sealed class User : AggregateRoot
         if (string.IsNullOrWhiteSpace(newPasswordHash))
             throw new DomainException("Password hash cannot be empty.");
         PasswordHash = newPasswordHash;
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now);
     }
 
-    public void Deactivate() { IsActive = false; SetUpdatedAt(DateTime.UtcNow); }
-    public void Activate()   { IsActive = true;  SetUpdatedAt(DateTime.UtcNow); }
+    public void Deactivate() { IsActive = false; SetUpdatedAt(DateTime.Now); }
+    public void Activate()   { IsActive = true;  SetUpdatedAt(DateTime.Now); }
 }

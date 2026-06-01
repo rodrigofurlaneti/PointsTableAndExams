@@ -1,4 +1,4 @@
-using PointsTableAndExams.Domain.Common;
+﻿using PointsTableAndExams.Domain.Common;
 using PointsTableAndExams.Domain.DomainEvents;
 using PointsTableAndExams.Domain.Exceptions;
 
@@ -30,7 +30,7 @@ public sealed class ExamRequest : AggregateRoot
             Notes = notes?.Trim()
         };
 
-        request.SetCreatedAt(DateTime.UtcNow);
+        request.SetCreatedAt(DateTime.Now);
         request.RaiseDomainEvent(ExamRequestCreatedEvent.Create(request.Id, userId));
 
         return request;
@@ -43,7 +43,7 @@ public sealed class ExamRequest : AggregateRoot
 
         var item = ExamRequestItem.Create(Id, examId);
         _items.Add(item);
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now);
         return item;
     }
 
@@ -54,13 +54,13 @@ public sealed class ExamRequest : AggregateRoot
 
         item.Complete(completedDate, result, laboratory);
         RaiseDomainEvent(ExamCompletedEvent.Create(item.Id, item.ExamId));
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now);
     }
 
     public void Update(string? doctorName, string? notes)
     {
         DoctorName = doctorName?.Trim();
         Notes = notes?.Trim();
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now);
     }
 }

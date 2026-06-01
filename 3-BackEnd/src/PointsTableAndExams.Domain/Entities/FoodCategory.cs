@@ -1,5 +1,4 @@
-using PointsTableAndExams.Domain.Common;
-using PointsTableAndExams.Domain.Exceptions;
+﻿using PointsTableAndExams.Domain.Common;
 
 namespace PointsTableAndExams.Domain.Entities;
 
@@ -18,12 +17,12 @@ public sealed class FoodCategory : Entity
 
     private FoodCategory() { }
 
-    public static FoodCategory Create(string name, string? description, int? defaultQuotaPoints, string? servingUnit, byte sortOrder)
+    public static Result<FoodCategory> Create(string name, string? description, int? defaultQuotaPoints, string? servingUnit, byte sortOrder)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new DomainException("Food category name cannot be empty.");
+            return Result<FoodCategory>.Failure("Food category name cannot be empty.");
 
-        return new FoodCategory
+        var category = new FoodCategory
         {
             Name = name.Trim(),
             Description = description?.Trim(),
@@ -32,20 +31,24 @@ public sealed class FoodCategory : Entity
             SortOrder = sortOrder,
             IsActive = true
         };
+
+        return Result<FoodCategory>.Success(category);
     }
 
-    public void Update(string name, string? description, int? defaultQuotaPoints, string? servingUnit)
+    public Result Update(string name, string? description, int? defaultQuotaPoints, string? servingUnit)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new DomainException("Food category name cannot be empty.");
+            return Result.Failure("Food category name cannot be empty.");
 
         Name = name.Trim();
         Description = description?.Trim();
         DefaultQuotaPoints = defaultQuotaPoints;
         ServingUnit = servingUnit?.Trim();
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now); 
+
+        return Result.Success();
     }
 
-    public void Deactivate() { IsActive = false; SetUpdatedAt(DateTime.UtcNow); }
-    public void Activate()   { IsActive = true;  SetUpdatedAt(DateTime.UtcNow); }
+    public void Deactivate() { IsActive = false; SetUpdatedAt(DateTime.Now); }
+    public void Activate() { IsActive = true; SetUpdatedAt(DateTime.Now); }
 }

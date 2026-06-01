@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NSubstitute;
 using PointsTableAndExams.Application.DailyLogs.Commands.CreateDailyLog;
 using PointsTableAndExams.Domain.Entities;
@@ -21,7 +21,7 @@ public sealed class CreateDailyLogCommandHandlerTests
     public async Task Handle_WhenLogDoesNotExist_ShouldCreateLog()
     {
         var userId = Guid.NewGuid();
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTime.Now);
         _repository.ExistsForDateAsync(userId, date, Arg.Any<CancellationToken>()).Returns(false);
 
         var result = await _handler.Handle(new CreateDailyLogCommand(userId, date, null), CancellationToken.None);
@@ -34,7 +34,7 @@ public sealed class CreateDailyLogCommandHandlerTests
     public async Task Handle_WhenLogAlreadyExists_ShouldReturnFailure()
     {
         var userId = Guid.NewGuid();
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTime.Now);
         _repository.ExistsForDateAsync(userId, date, Arg.Any<CancellationToken>()).Returns(true);
 
         var result = await _handler.Handle(new CreateDailyLogCommand(userId, date, null), CancellationToken.None);

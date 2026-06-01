@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using FluentAssertions;
 using PointsTableAndExams.E2ETests.Support;
 
@@ -62,7 +62,7 @@ public sealed class AuthE2ETests(PlaywrightFixture fixture) : IClassFixture<Play
     [Fact]
     public async Task ProtectedEndpoint_WithoutToken_ShouldReturn401()
     {
-        var response = await fixture.ApiContext.GetAsync("/api/daily-logs/" + Guid.NewGuid() + "/" + DateOnly.FromDateTime(DateTime.UtcNow));
+        var response = await fixture.ApiContext.GetAsync("/api/daily-logs/" + Guid.NewGuid() + "/" + DateOnly.FromDateTime(DateTime.Now));
         response.Status.Should().Be(401);
     }
 }

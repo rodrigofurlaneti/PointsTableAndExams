@@ -1,4 +1,4 @@
-using PointsTableAndExams.Domain.Common;
+﻿using PointsTableAndExams.Domain.Common;
 using PointsTableAndExams.Domain.Exceptions;
 
 namespace PointsTableAndExams.Domain.Entities;
@@ -40,9 +40,9 @@ public sealed class Exam : Entity
         Name = name.Trim();
         Abbreviation = abbreviation?.Trim();
         Description = description?.Trim();
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now);
     }
 
-    public void Deactivate() { IsActive = false; SetUpdatedAt(DateTime.UtcNow); }
-    public void Activate()   { IsActive = true;  SetUpdatedAt(DateTime.UtcNow); }
+    public void Deactivate() { IsActive = false; SetUpdatedAt(DateTime.Now); }
+    public void Activate()   { IsActive = true;  SetUpdatedAt(DateTime.Now); }
 }

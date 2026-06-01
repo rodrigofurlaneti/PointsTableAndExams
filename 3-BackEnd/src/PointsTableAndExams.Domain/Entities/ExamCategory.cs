@@ -1,4 +1,4 @@
-using PointsTableAndExams.Domain.Common;
+﻿using PointsTableAndExams.Domain.Common;
 using PointsTableAndExams.Domain.Exceptions;
 
 namespace PointsTableAndExams.Domain.Entities;
@@ -28,9 +28,9 @@ public sealed class ExamCategory : Entity
         if (string.IsNullOrWhiteSpace(name))
             throw new DomainException("Exam category name cannot be empty.");
         Name = name.Trim();
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now);
     }
 
-    public void Deactivate() { IsActive = false; SetUpdatedAt(DateTime.UtcNow); }
-    public void Activate()   { IsActive = true;  SetUpdatedAt(DateTime.UtcNow); }
+    public void Deactivate() { IsActive = false; SetUpdatedAt(DateTime.Now); }
+    public void Activate()   { IsActive = true;  SetUpdatedAt(DateTime.Now); }
 }

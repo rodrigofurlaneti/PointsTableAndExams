@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using PointsTableAndExams.Domain.Common;
 using PointsTableAndExams.Domain.Interfaces.Repositories;
 

@@ -1,6 +1,7 @@
-using PointsTableAndExams.Domain.Common;
-using PointsTableAndExams.Domain.Exceptions;
+﻿using PointsTableAndExams.Domain.Common;
 using PointsTableAndExams.Domain.ValueObjects;
+// Assumindo que você tem um namespace para o Result Pattern, ex:
+// using PointsTableAndExams.Domain.Common.Models; 
 
 namespace PointsTableAndExams.Domain.Entities;
 
@@ -17,37 +18,54 @@ public sealed class FoodItem : Entity
 
     private FoodItem() { }
 
-    public static FoodItem Create(Guid categoryId, string name, string? servingSize, int points, string? notes = null)
+    // O método de fábrica (Factory Method) passa a retornar Result<FoodItem>
+    public static Result<FoodItem> Create(Guid categoryId, string name, string? servingSize, int points, string? notes = null)
     {
+        // Object Calisthenics: Fail fast sem "else"
         if (categoryId == Guid.Empty)
-            throw new DomainException("Category id is required.");
+            return Result<FoodItem>.Failure("Category id is required.");
 
         if (string.IsNullOrWhiteSpace(name))
-            throw new DomainException("Food item name cannot be empty.");
+            return Result<FoodItem>.Failure("Food item name cannot be empty.");
 
-        return new FoodItem
+        // Assumindo que ValueObjects.Points.Create também retorne um Result, 
+        // você precisaria validar aqui, ou usar os pontos diretamente se o VO não falhar.
+        var pointsResult = ValueObjects.Points.Create(points);
+        if (!pointsResult.IsSuccess)
+            return Result<FoodItem>.Failure(pointsResult.Error);
+
+        var foodItem = new FoodItem
         {
             FoodCategoryId = categoryId,
             Name = name.Trim(),
             ServingSize = servingSize?.Trim(),
-            Points = ValueObjects.Points.Create(points),
+            Points = pointsResult.Value,
             Notes = notes?.Trim(),
             IsActive = true
         };
+
+        return Result<FoodItem>.Success(foodItem);
     }
 
-    public void Update(string name, string? servingSize, int points, string? notes)
+    // A atualização também passa a retornar um Result
+    public Result Update(string name, string? servingSize, int points, string? notes)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new DomainException("Food item name cannot be empty.");
+            return Result.Failure("Food item name cannot be empty.");
+
+        var pointsResult = ValueObjects.Points.Create(points);
+        if (!pointsResult.IsSuccess)
+            return Result.Failure(pointsResult.Error);
 
         Name = name.Trim();
         ServingSize = servingSize?.Trim();
-        Points = ValueObjects.Points.Create(points);
+        Points = pointsResult.Value;
         Notes = notes?.Trim();
-        SetUpdatedAt(DateTime.UtcNow);
+        SetUpdatedAt(DateTime.Now);
+
+        return Result.Success();
     }
 
-    public void Deactivate() { IsActive = false; SetUpdatedAt(DateTime.UtcNow); }
-    public void Activate()   { IsActive = true;  SetUpdatedAt(DateTime.UtcNow); }
+    public void Deactivate() { IsActive = false; SetUpdatedAt(DateTime.Now); }
+    public void Activate() { IsActive = true; SetUpdatedAt(DateTime.Now); }
 }

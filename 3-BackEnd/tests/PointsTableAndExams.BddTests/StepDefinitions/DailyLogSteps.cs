@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NSubstitute;
 using PointsTableAndExams.Application.DailyLogs.Commands.AddLogItem;
 using PointsTableAndExams.Application.DailyLogs.Commands.CreateDailyLog;
@@ -19,7 +19,7 @@ public sealed class DailyLogSteps
     private Guid _logId;
     private DailyLog? _log;
     private Result<Guid>? _result;
-    private DateOnly _today = DateOnly.FromDateTime(DateTime.UtcNow);
+    private DateOnly _today = DateOnly.FromDateTime(DateTime.Now);
 
     [Given("I am a registered user")]
     public void GivenIAmARegisteredUser() { /* user already exists in domain */ }

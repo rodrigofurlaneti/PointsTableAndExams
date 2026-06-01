@@ -1,4 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
@@ -28,7 +28,7 @@ public sealed class JwtTokenService(IConfiguration configuration) : ITokenServic
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(double.Parse(jwtSettings["ExpirationHours"]!)),
+            expires: DateTime.Now.AddHours(double.Parse(jwtSettings["ExpirationHours"]!)),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

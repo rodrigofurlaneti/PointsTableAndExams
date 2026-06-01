@@ -11,6 +11,19 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ExamCategories\Commands\Create\" />
+    <Folder Include="ExamCategories\Commands\Update\" />
+    <Folder Include="ExamCategories\DTOs\" />
+    <Folder Include="ExamCategories\Queries\GetById\" />
+    <Folder Include="ExamCategories\Queries\SearchExamCategories\" />
+    <Folder Include="Exam\Commands\Create\" />
+    <Folder Include="Exam\Commands\Update\" />
+    <Folder Include="Exam\DTOs\" />
+    <Folder Include="Exam\Queries\GetById\" />
+    <Folder Include="Exam\Queries\SearchExam\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
