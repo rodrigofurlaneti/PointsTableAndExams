@@ -22,7 +22,7 @@ public sealed class CreateFoodItemCommandHandler(
 
         // 2. Fail-fast: Se a criação falhar por violação de regra de domínio, devolve a falha
         if (!foodItemResult.IsSuccess)
-            return Result<Guid>.Failure(foodItemResult.Error);
+            return Result.Failure<Guid>(foodItemResult.Error);
 
         // 3. Usa a propriedade .Value para acessar a entidade validada e persistir
         await repository.AddAsync(foodItemResult.Value, cancellationToken);
@@ -31,6 +31,6 @@ public sealed class CreateFoodItemCommandHandler(
         await unitOfWork.CommitAsync(cancellationToken);
 
         // 5. Retorna sucesso com o ID gerado
-        return Result<Guid>.Success(foodItemResult.Value.Id);
+        return Result.Success<Guid>(foodItemResult.Value.Id);
     }
 }

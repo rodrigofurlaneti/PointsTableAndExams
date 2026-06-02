@@ -22,13 +22,13 @@ public sealed class CreateFoodCategoryCommandHandler(
 
         // 2. Fail-fast: se a criação falhar, retorna imediatamente
         if (!categoryResult.IsSuccess)
-            return Result<Guid>.Failure(categoryResult.Error);
+            return Result.Failure<Guid>(categoryResult.Error);
 
         // 3. Persiste e comita
         await repository.AddAsync(categoryResult.Value, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
 
         // 4. Retorna o ID gerado
-        return Result<Guid>.Success(categoryResult.Value.Id);
+        return Result.Success<Guid>(categoryResult.Value.Id);
     }
 }

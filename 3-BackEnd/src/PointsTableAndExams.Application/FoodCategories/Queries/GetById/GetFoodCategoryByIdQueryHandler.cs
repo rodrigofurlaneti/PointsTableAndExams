@@ -17,7 +17,7 @@ namespace PointsTableAndExams.Application.FoodCategories.Queries.GetById
 
             // 2. Fail-fast: Se não encontrar, retorna falha no Result
             if (category is null)
-                return Result<FoodCategoryResponse>.Failure("Categoria de alimento não encontrada.");
+                return Result.Failure<FoodCategoryResponse>(new Error("NotFound", "Categoria de alimento não encontrada."));
 
             // 3. Mapeia a entidade para o DTO de resposta
             var response = new FoodCategoryResponse(

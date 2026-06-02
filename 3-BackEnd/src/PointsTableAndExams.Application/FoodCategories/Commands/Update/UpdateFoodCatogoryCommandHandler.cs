@@ -16,7 +16,7 @@ namespace PointsTableAndExams.Application.FoodCategories.Commands.Update
 
             // 2. Fail-fast: Categoria não encontrada (sem o uso de 'else')
             if (category is null)
-                return Result.Failure("Categoria de alimento não encontrada.");
+                return Result.Failure(new Error("NotFound", "Categoria de alimento não encontrada."));
 
             // 3. Atualiza através do modelo rico, que também nos devolve um Result
             var updateResult = category.Update(

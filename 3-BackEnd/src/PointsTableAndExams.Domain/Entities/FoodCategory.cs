@@ -20,7 +20,7 @@ public sealed class FoodCategory : Entity
     public static Result<FoodCategory> Create(string name, string? description, int? defaultQuotaPoints, string? servingUnit, byte sortOrder)
     {
         if (string.IsNullOrWhiteSpace(name))
-            return Result<FoodCategory>.Failure("Food category name cannot be empty.");
+            return Result.Failure<FoodCategory>(new Error("Validation.Required", "Food category name cannot be empty."));
 
         var category = new FoodCategory
         {
@@ -38,7 +38,7 @@ public sealed class FoodCategory : Entity
     public Result Update(string name, string? description, int? defaultQuotaPoints, string? servingUnit)
     {
         if (string.IsNullOrWhiteSpace(name))
-            return Result.Failure("Food category name cannot be empty.");
+            return Result.Failure(new Error("Validation.Required", "Food category name cannot be empty."));
 
         Name = name.Trim();
         Description = description?.Trim();

@@ -20,6 +20,6 @@ public sealed class CreateExamCategoryCommandHandler(
         await unitOfWork.CommitAsync(cancellationToken);
 
         // 3. Retorna o ID gerado
-        return Result<Guid>.Success(category.Id);
+        return Result.Success<Guid>(category.Id);
     }
 }

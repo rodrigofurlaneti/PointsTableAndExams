@@ -13,7 +13,7 @@ public sealed class GetExamByIdQueryHandler(IExamRepository repository)
         var exam = await repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (exam is null)
-            return Result<ExamResponse>.Failure(new Error("NotFound", "Exame não encontrado."));
+            return Result.Failure<ExamResponse>(new Error("NotFound", "Exame não encontrado."));
 
         var response = new ExamResponse(
             exam.Id,
@@ -23,6 +23,6 @@ public sealed class GetExamByIdQueryHandler(IExamRepository repository)
             exam.Description,
             exam.IsActive);
 
-        return Result<ExamResponse>.Success(response);
+        return Result.Success<ExamResponse>(response);
     }
 }

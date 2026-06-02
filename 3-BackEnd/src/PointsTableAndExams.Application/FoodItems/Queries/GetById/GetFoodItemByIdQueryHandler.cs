@@ -19,7 +19,7 @@ namespace PointsTableAndExams.Application.FoodItems.Queries.GetById
 
             // Fail fast: sem o uso de "else", seguindo Object Calisthenics
             if (foodItem is null)
-                return Result<FoodItemResponse>.Failure(new Error("NotFound", "Alimento não encontrado."));
+                return Result.Failure<FoodItemResponse>(new Error("NotFound", "Alimento não encontrado."));
 
             // Mapeamento corrigido para os nomes corretos definidos na sua modelagem
             var response = new FoodItemResponse(
@@ -31,7 +31,7 @@ namespace PointsTableAndExams.Application.FoodItems.Queries.GetById
                 foodItem.FoodCategoryId, // Corrigido de CategoryId para FoodCategoryId
                 foodItem.IsActive);
 
-            return Result<FoodItemResponse>.Success(response);
+            return Result.Success<FoodItemResponse>(response);
         }
     }
 }

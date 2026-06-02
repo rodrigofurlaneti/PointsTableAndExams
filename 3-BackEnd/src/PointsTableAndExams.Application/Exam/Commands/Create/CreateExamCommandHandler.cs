@@ -21,7 +21,7 @@ namespace PointsTableAndExams.Application.Exam.Commands.Create
 
             // 2. Fail-fast: Se a criação falhar (ex: regra de domínio violada), retorna imediatamente
             if (!examResult.IsSuccess)
-                return Result<Guid>.Failure(examResult.Error);
+                return Result.Failure<Guid>(examResult.Error);
 
             // 3. Persistência
             await repository.AddAsync(examResult.Value, cancellationToken);
@@ -30,7 +30,7 @@ namespace PointsTableAndExams.Application.Exam.Commands.Create
             await unitOfWork.CommitAsync(cancellationToken);
 
             // 4. Retorna sucesso com o ID gerado
-            return Result<Guid>.Success(examResult.Value.Id);
+            return Result.Success<Guid>(examResult.Value.Id);
         }
     }
 }

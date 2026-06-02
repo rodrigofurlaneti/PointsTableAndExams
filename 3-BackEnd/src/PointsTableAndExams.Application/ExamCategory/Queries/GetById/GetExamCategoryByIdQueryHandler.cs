@@ -15,7 +15,7 @@ public sealed class GetExamCategoryByIdQueryHandler(IExamCategoryRepository repo
 
         // 2. Fail-fast: não encontrada
         if (category is null)
-            return Result<ExamCategoryResponse>.Failure(new Error("NotFound", "Categoria de exame não encontrada."));
+            return Result.Failure<ExamCategoryResponse>(new Error("NotFound", "Categoria de exame não encontrada."));
 
         // 3. Mapeia para DTO
         var response = new ExamCategoryResponse(
@@ -24,6 +24,6 @@ public sealed class GetExamCategoryByIdQueryHandler(IExamCategoryRepository repo
             category.SortOrder,
             category.IsActive);
 
-        return Result<ExamCategoryResponse>.Success(response);
+        return Result.Success<ExamCategoryResponse>(response);
     }
 }

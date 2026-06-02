@@ -16,7 +16,7 @@ namespace PointsTableAndExams.Application.FoodItems.Commands.Update
 
             // 2. Fail-fast: Se não encontrar, retorna falha imediatamente
             if (foodItem is null)
-                return Result.Failure("Alimento não encontrado.");
+                return Result.Failure(new Error("NotFound", "Alimento não encontrado."));
 
             // 3. Atualização da entidade com setters privados (Rich Domain Model)
             var updateResult = foodItem.Update(
