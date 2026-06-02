@@ -32,6 +32,9 @@ public static class DependencyInjection
         services.AddScoped<IDailyLogRepository, DailyLogRepository>();
         services.AddScoped<IExamRequestRepository, ExamRequestRepository>();
         services.AddScoped<IFoodItemRepository, FoodItemRepository>();
+        services.AddScoped<IFoodCategoryRepository, FoodCategoryRepository>();
+        services.AddScoped<IExamRepository, ExamRepository>();
+        services.AddScoped<IExamCategoryRepository, ExamCategoryRepository>();
 
         // Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();

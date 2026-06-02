@@ -11,17 +11,14 @@ namespace PointsTableAndExams.Api.Controllers;
 [Authorize]
 public sealed class DailyLogsController(IMediator mediator) : BaseApiController(mediator)
 {
-    /// <summary>Get daily log history for a user within a date range.</summary>
     [HttpGet("{userId:guid}/history")]
     public async Task<IActionResult> GetHistory(Guid userId, [FromQuery] DateOnly from, [FromQuery] DateOnly to, CancellationToken ct) =>
         FromResult(await Mediator.Send(new GetDailyLogHistoryQuery(userId, from, to), ct));
 
-    /// <summary>Get daily log by user and date.</summary>
     [HttpGet("{userId:guid}/{date}")]
     public async Task<IActionResult> GetByDate(Guid userId, DateOnly date, CancellationToken ct) =>
         FromResult(await Mediator.Send(new GetDailyLogByDateQuery(userId, date), ct));
 
-    /// <summary>Create a new daily log.</summary>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateDailyLogRequest req, CancellationToken ct)
     {
@@ -30,7 +27,6 @@ public sealed class DailyLogsController(IMediator mediator) : BaseApiController(
         return CreatedAtAction(nameof(GetByDate), new { userId = req.UserId, date = req.LogDate }, new { id = result.Value });
     }
 
-    /// <summary>Add a food item to an existing daily log.</summary>
     [HttpPost("{logId:guid}/items")]
     public async Task<IActionResult> AddItem(Guid logId, [FromBody] AddLogItemRequest req, CancellationToken ct)
     {

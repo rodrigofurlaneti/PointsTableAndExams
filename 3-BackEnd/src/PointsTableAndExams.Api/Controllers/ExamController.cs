@@ -15,20 +15,16 @@ public sealed class ExamController(IMediator mediator) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var query = new GetAllExamQuery();
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await mediator.Send(new GetAllExamQuery(), cancellationToken);
         return Ok(result.Value);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var query = new GetExamByIdQuery(id);
-        var result = await mediator.Send(query, cancellationToken);
-
+        var result = await mediator.Send(new GetExamByIdQuery(id), cancellationToken);
         if (!result.IsSuccess)
             return NotFound(result.Error);
-
         return Ok(result.Value);
     }
 
@@ -36,10 +32,8 @@ public sealed class ExamController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreateExamCommand command, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(command, cancellationToken);
-
         if (!result.IsSuccess)
             return BadRequest(result.Error);
-
         return CreatedAtAction(nameof(GetById), new { id = result.Value }, command);
     }
 
@@ -47,25 +41,19 @@ public sealed class ExamController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateExamCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Id)
-            return BadRequest("O ID da rota difere do ID do corpo da requisição.");
-
+            return BadRequest("O ID da rota difere do ID do corpo da requisicao.");
         var result = await mediator.Send(command, cancellationToken);
-
         if (!result.IsSuccess)
             return BadRequest(result.Error);
-
         return NoContent();
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var command = new DeleteExamCommand(id);
-        var result = await mediator.Send(command, cancellationToken);
-
+        var result = await mediator.Send(new DeleteExamCommand(id), cancellationToken);
         if (!result.IsSuccess)
             return BadRequest(result.Error);
-
         return NoContent();
     }
 }

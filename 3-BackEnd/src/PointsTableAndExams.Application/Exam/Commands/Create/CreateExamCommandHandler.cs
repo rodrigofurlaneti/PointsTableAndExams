@@ -1,36 +1,29 @@
-﻿using MediatR;
+using MediatR;
 using PointsTableAndExams.Domain.Common;
-using PointsTableAndExams.Domain.Entities;
 using PointsTableAndExams.Domain.Interfaces.Repositories;
+using ExamEntity = PointsTableAndExams.Domain.Entities.Exam;
 
-namespace PointsTableAndExams.Application.Exam.Commands.Create
+namespace PointsTableAndExams.Application.Exam.Commands.Create;
+
+public sealed class CreateExamCommandHandler(
+    IExamRepository repository,
+    IUnitOfWork unitOfWork)
+    : IRequestHandler<CreateExamCommand, Result<Guid>>
 {
-    public class CreateExamCommandHandler(
-        IExamRepository repository,
-        IUnitOfWork unitOfWork)
-        : IRequestHandler<CreateExamCommand, Result<Guid>>
+    public async Task<Result<Guid>> Handle(CreateExamCommand request, CancellationToken cancellationToken)
     {
-        public async Task<Result<Guid>> Handle(CreateExamCommand request, CancellationToken cancellationToken)
-        {
-            // 1. Cria a entidade pelo método de fábrica (Rich Domain Model), que retorna um Result
-            var examResult = Exam.Create(
-                request.ExamCategoryId,
-                request.Name,
-                request.Abbreviation,
-                request.Description);
+        // 1. Cria a entidade pelo metodo de fabrica (lanca DomainException se invalido)
+        var exam = ExamEntity.Create(
+            request.ExamCategoryId,
+            request.Name,
+            request.Abbreviation,
+            request.Description);
 
-            // 2. Fail-fast: Se a criação falhar (ex: regra de domínio violada), retorna imediatamente
-            if (!examResult.IsSuccess)
-                return Result.Failure<Guid>(examResult.Error);
+        // 2. Persiste e comita
+        await repository.AddAsync(exam, cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
-            // 3. Persistência
-            await repository.AddAsync(examResult.Value, cancellationToken);
-
-            // O CommitAsync garante a atomicidade e despacha possíveis Domain Events
-            await unitOfWork.CommitAsync(cancellationToken);
-
-            // 4. Retorna sucesso com o ID gerado
-            return Result.Success<Guid>(examResult.Value.Id);
-        }
+        // 3. Retorna o ID gerado
+        return Result.Success<Guid>(exam.Id);
     }
 }

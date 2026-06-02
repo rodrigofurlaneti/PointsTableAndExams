@@ -1,4 +1,4 @@
-﻿using PointsTableAndExams.Domain.Common;
+using PointsTableAndExams.Domain.Common;
 
 namespace PointsTableAndExams.Domain.Entities;
 
@@ -32,7 +32,7 @@ public sealed class FoodCategory : Entity
             IsActive = true
         };
 
-        return Result<FoodCategory>.Success(category);
+        return Result.Success<FoodCategory>(category);
     }
 
     public Result Update(string name, string? description, int? defaultQuotaPoints, string? servingUnit)
@@ -44,7 +44,7 @@ public sealed class FoodCategory : Entity
         Description = description?.Trim();
         DefaultQuotaPoints = defaultQuotaPoints;
         ServingUnit = servingUnit?.Trim();
-        SetUpdatedAt(DateTime.Now); 
+        SetUpdatedAt(DateTime.Now);
 
         return Result.Success();
     }

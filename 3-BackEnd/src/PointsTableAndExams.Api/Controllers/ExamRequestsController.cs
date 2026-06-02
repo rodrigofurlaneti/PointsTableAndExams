@@ -11,17 +11,14 @@ namespace PointsTableAndExams.Api.Controllers;
 [Authorize]
 public sealed class ExamRequestsController(IMediator mediator) : BaseApiController(mediator)
 {
-    /// <summary>Get all exam requests, optionally filtered by user.</summary>
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] Guid? userId, CancellationToken ct) =>
         FromResult(await Mediator.Send(new GetAllExamRequestsQuery(userId), ct));
 
-    /// <summary>Get exam request by ID.</summary>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct) =>
         FromResult(await Mediator.Send(new GetExamRequestByIdQuery(id), ct));
 
-    /// <summary>Create a new exam request.</summary>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateExamRequestRequest req, CancellationToken ct)
     {
@@ -31,7 +28,6 @@ public sealed class ExamRequestsController(IMediator mediator) : BaseApiControll
         return CreatedAtAction(nameof(GetById), new { id = result.Value }, new { id = result.Value });
     }
 
-    /// <summary>Mark an exam as completed.</summary>
     [HttpPatch("{requestId:guid}/items/{itemId:guid}/complete")]
     public async Task<IActionResult> Complete(Guid requestId, Guid itemId,
         [FromBody] CompleteExamRequest req, CancellationToken ct)
