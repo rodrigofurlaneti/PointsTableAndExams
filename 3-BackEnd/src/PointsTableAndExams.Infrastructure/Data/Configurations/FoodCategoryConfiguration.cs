@@ -9,6 +9,8 @@ public sealed class FoodCategoryConfiguration : IEntityTypeConfiguration<FoodCat
     public void Configure(EntityTypeBuilder<FoodCategory> builder)
     {
         builder.ToTable("FoodCategory");
+        builder.Ignore(e => e.CreatedAt);
+        builder.Ignore(e => e.UpdatedAt);
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Name).HasMaxLength(100).IsRequired();
         builder.Property(c => c.Description).HasMaxLength(300);

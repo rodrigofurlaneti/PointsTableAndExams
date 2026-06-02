@@ -9,6 +9,8 @@ public sealed class ExamRequestItemConfiguration : IEntityTypeConfiguration<Exam
     public void Configure(EntityTypeBuilder<ExamRequestItem> builder)
     {
         builder.ToTable("ExamRequestItem");
+        builder.Ignore(e => e.CreatedAt);
+        builder.Ignore(e => e.UpdatedAt);
         builder.HasKey(i => i.Id);
         builder.Property(i => i.Result).HasMaxLength(500);
         builder.Property(i => i.Laboratory).HasMaxLength(150);
