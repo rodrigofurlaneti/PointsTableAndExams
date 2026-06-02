@@ -17,8 +17,6 @@
     <Folder Include="ExamCategories\DTOs\" />
     <Folder Include="ExamCategories\Queries\GetById\" />
     <Folder Include="ExamCategories\Queries\SearchExamCategories\" />
-    <Folder Include="Exam\Commands\Create\" />
-    <Folder Include="Exam\Commands\Update\" />
     <Folder Include="Exam\DTOs\" />
     <Folder Include="Exam\Queries\GetById\" />
     <Folder Include="Exam\Queries\SearchExam\" />
