@@ -1,38 +1,35 @@
 export interface FoodItem {
   id: string;
   name: string;
-  servingSize: string;
+  servingSize?: string;
   points: number;
-  category: string;
+  foodCategoryId: string;
+  isActive: boolean;
 }
 
 export interface DailyLogItem {
   id: string;
   foodItemId: string;
   foodItemName: string;
-  category: string;
   quantity: number;
   pointsComputed: number;
-  mealTime: string;
+  mealTime?: string;
+  notes?: string;
 }
 
 export interface DailyLog {
   id: string;
+  userId: string;
   logDate: string;
   totalPoints: number;
+  notes?: string;
   items: DailyLogItem[];
 }
 
 export interface AddLogItemRequest {
   foodItemId: string;
   quantity: number;
-  mealTime: string;
-}
-
-export interface DailyPointsHistory {
-  userId: string;
-  fullName: string;
-  logDate: string;
-  totalPoints: number;
-  foodItemCount: number;
+  pointsPerServing: number;
+  mealTime?: string;
+  notes?: string;
 }
