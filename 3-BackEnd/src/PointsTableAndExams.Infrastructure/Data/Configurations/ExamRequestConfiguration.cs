@@ -8,7 +8,7 @@ public sealed class ExamRequestConfiguration : IEntityTypeConfiguration<ExamRequ
 {
     public void Configure(EntityTypeBuilder<ExamRequest> builder)
     {
-        builder.ToTable("ExamRequests");
+        builder.ToTable("ExamRequest");
         builder.HasKey(r => r.Id);
         builder.Property(r => r.DoctorName).HasMaxLength(150);
         builder.Property(r => r.Notes).HasMaxLength(500);

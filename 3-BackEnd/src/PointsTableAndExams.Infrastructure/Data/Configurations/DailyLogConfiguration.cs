@@ -8,7 +8,7 @@ public sealed class DailyLogConfiguration : IEntityTypeConfiguration<DailyLog>
 {
     public void Configure(EntityTypeBuilder<DailyLog> builder)
     {
-        builder.ToTable("DailyLogs");
+        builder.ToTable("DailyLog");
         builder.HasKey(d => d.Id);
         builder.Property(d => d.Notes).HasMaxLength(500);
         builder.HasIndex(d => new { d.UserId, d.LogDate }).IsUnique();
