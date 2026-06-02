@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { SubNav } from '../../../design-system/components/Nav/SubNav';
 import { Button } from '../../../design-system/components/Button/Button';
 import { Spinner } from '../../../shared/components/Spinner';
@@ -8,6 +8,7 @@ import styles from './ExamsPage.module.css';
 export default function ExamsPage() {
   const { data: requests = [], isLoading } = useMyExamRequests();
   const { mutate: updateItem } = useUpdateExamItem();
+  const navigate = useNavigate();
 
   const pendingCount = requests
     .flatMap((r) => r.items)
@@ -17,7 +18,7 @@ export default function ExamsPage() {
     updateItem({
       requestId,
       itemId,
-      data: { isCompleted: true, completedDate: new Date().toISOString().split('T')[0] },
+      data: { completedDate: new Date().toISOString().split('T')[0] },
     });
   };
 
@@ -41,9 +42,7 @@ export default function ExamsPage() {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-lg)' }}>
             <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>My requests</h2>
-            <Button variant="secondary" asChild>
-              <Link to="/exams/requests">+ New request</Link>
-            </Button>
+            <Button variant="secondary" onClick={() => navigate('/exams/requests')}>+ New request</Button>
           </div>
 
           {isLoading ? (
