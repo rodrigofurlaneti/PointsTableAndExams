@@ -14,7 +14,7 @@ public sealed class DailyLogConfiguration : IEntityTypeConfiguration<DailyLog>
         builder.HasIndex(d => new { d.UserId, d.LogDate }).IsUnique();
 
         builder.OwnsOne(d => d.TotalPoints, p =>
-            p.Property(x => x.Value).HasColumnName("TotalPoints").HasColumnType("smallint").HasConversion<int>().IsRequired());
+            p.Property(x => x.Value).HasColumnName("TotalPoints").HasConversion(v => (short)v, v => (int)v).IsRequired());
 
         builder.HasMany(d => d.Items)
             .WithOne()

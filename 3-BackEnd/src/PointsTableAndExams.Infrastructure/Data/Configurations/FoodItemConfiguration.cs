@@ -17,7 +17,7 @@ public sealed class FoodItemConfiguration : IEntityTypeConfiguration<FoodItem>
         builder.Property(f => f.Notes).HasMaxLength(300);
 
         builder.OwnsOne(f => f.Points, p =>
-            p.Property(x => x.Value).HasColumnName("Points").HasColumnType("smallint").HasConversion<int>().IsRequired());
+            p.Property(x => x.Value).HasColumnName("Points").HasConversion(v => (short)v, v => (int)v).IsRequired());
 
         // Relationship configured in FoodCategoryConfiguration
         builder.HasOne(f => f.Category)

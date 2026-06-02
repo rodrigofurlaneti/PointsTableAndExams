@@ -13,7 +13,7 @@ public sealed class DailyLogItemConfiguration : IEntityTypeConfiguration<DailyLo
         builder.Ignore(e => e.UpdatedAt);
         builder.HasKey(i => i.Id);
         builder.Property(i => i.Quantity).HasColumnType("decimal(5,2)").IsRequired();
-        builder.Property(i => i.PointsComputed).HasColumnType("smallint").HasConversion<int>().IsRequired();
+        builder.Property(i => i.PointsComputed).HasConversion(v => (short)v, v => (int)v).IsRequired();
         builder.Property(i => i.Notes).HasMaxLength(300);
     }
 }
