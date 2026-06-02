@@ -14,6 +14,7 @@ public sealed class FoodCategoryConfiguration : IEntityTypeConfiguration<FoodCat
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Name).HasMaxLength(100).IsRequired();
         builder.Property(c => c.Description).HasMaxLength(300);
+        builder.Property(c => c.DefaultQuotaPoints).HasColumnType("smallint");
         builder.Property(c => c.ServingUnit).HasMaxLength(100);
         builder.Property(c => c.SortOrder).IsRequired();
         builder.Property(c => c.IsActive).IsRequired().HasDefaultValue(true);
