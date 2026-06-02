@@ -1,43 +1,34 @@
-﻿using MediatR;
-using PointsTableAndExams.Application.Exam.Commands.Update;
-using PointsTableAndExams.Application.FoodCategories.Commands.Update;
+using MediatR;
 using PointsTableAndExams.Domain.Common;
 using PointsTableAndExams.Domain.Entities;
 using PointsTableAndExams.Domain.Interfaces.Repositories;
 
-namespace PointsTableAndExams.Application.FoodCategories.Commands.Create
+namespace PointsTableAndExams.Application.FoodCategories.Commands.Create;
+
+public sealed class CreateFoodCategoryCommandHandler(
+    IFoodCategoryRepository repository,
+    IUnitOfWork unitOfWork)
+    : IRequestHandler<CreateFoodCategoryCommand, Result<Guid>>
 {
-    public class UpdateExamCommandHandler(
-        IExamRepository repository,
-        IUnitOfWork unitOfWork)
-        : IRequestHandler<UpdateExamCommand, Result>
+    public async Task<Result<Guid>> Handle(CreateFoodCategoryCommand request, CancellationToken cancellationToken)
     {
-        public async Task<Result> Handle(UpdateExamCommand request, CancellationToken cancellationToken)
-        {
-            // 1. Busca a entidade a ser atualizada
-            var exam = await repository.GetByIdAsync(request.Id, cancellationToken);
+        // 1. Cria a entidade pelo método de fábrica (Rich Domain Model)
+        var categoryResult = FoodCategory.Create(
+            request.Name,
+            request.Description,
+            request.DefaultQuotaPoints,
+            request.ServingUnit,
+            request.SortOrder);
 
-            // 2. Fail-fast: Exame não encontrada (sem o uso de 'else')
-            if (exam is null)
-                return Result.Failure("Exame de alimento não encontrada.");
+        // 2. Fail-fast: se a criação falhar, retorna imediatamente
+        if (!categoryResult.IsSuccess)
+            return Result<Guid>.Failure(categoryResult.Error);
 
-            // 3. Atualiza através do modelo rico, que também nos devolve um Result
-            var updateResult = exam.Update(
-                request.Id,
-                request.ExamCategoryId,
-                request.Name,
-                request.Abbreviation,
-                request.Description);
+        // 3. Persiste e comita
+        await repository.AddAsync(categoryResult.Value, cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
-            if (!updateResult.IsSuccess)
-                return Result.Failure(updateResult.Error);
-
-            // 4. Persiste a alteração na infraestrutura e aciona o Commit
-            await repository.UpdateAsync(exam, cancellationToken);
-            await unitOfWork.CommitAsync(cancellationToken);
-
-            // 5. Retorna sucesso vazio
-            return Result.Success();
-        }
+        // 4. Retorna o ID gerado
+        return Result<Guid>.Success(categoryResult.Value.Id);
     }
-
+}

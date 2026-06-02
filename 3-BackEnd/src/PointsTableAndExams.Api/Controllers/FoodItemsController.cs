@@ -1,10 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using PointsTableAndExams.Application.Features.FoodItems.Commands.Create;
-using PointsTableAndExams.Application.Features.FoodItems.Commands.Delete;
-using PointsTableAndExams.Application.Features.FoodItems.Commands.Update;
-using PointsTableAndExams.Application.Features.FoodItems.Queries.GetAll;
-using PointsTableAndExams.Application.Features.FoodItems.Queries.GetById;
+using PointsTableAndExams.Application.FoodItems.Commands.Create;
+using PointsTableAndExams.Application.FoodItems.Commands.Delete;
+using PointsTableAndExams.Application.FoodItems.Commands.Update;
+using PointsTableAndExams.Application.FoodItems.Queries.GetAll;
+using PointsTableAndExams.Application.FoodItems.Queries.GetById;
 
 namespace PointsTableAndExams.Api.Controllers;
 

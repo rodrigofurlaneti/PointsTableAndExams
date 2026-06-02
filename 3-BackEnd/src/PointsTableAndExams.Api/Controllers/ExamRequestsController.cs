@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PointsTableAndExams.Application.ExamRequests.Commands.CreateExamRequest;
 using PointsTableAndExams.Application.ExamRequests.Commands.MarkExamCompleted;
+using PointsTableAndExams.Application.ExamRequests.Queries.GetAll;
 using PointsTableAndExams.Application.ExamRequests.Queries.GetExamRequestById;
 
 namespace PointsTableAndExams.Api.Controllers;
@@ -10,6 +11,11 @@ namespace PointsTableAndExams.Api.Controllers;
 [Authorize]
 public sealed class ExamRequestsController(IMediator mediator) : BaseApiController(mediator)
 {
+    /// <summary>Get all exam requests, optionally filtered by user.</summary>
+    [HttpGet]
+    public async Task<IActionResult> GetAll([FromQuery] Guid? userId, CancellationToken ct) =>
+        FromResult(await Mediator.Send(new GetAllExamRequestsQuery(userId), ct));
+
     /// <summary>Get exam request by ID.</summary>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct) =>

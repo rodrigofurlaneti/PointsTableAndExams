@@ -4,12 +4,18 @@ using Microsoft.AspNetCore.Mvc;
 using PointsTableAndExams.Application.DailyLogs.Commands.AddLogItem;
 using PointsTableAndExams.Application.DailyLogs.Commands.CreateDailyLog;
 using PointsTableAndExams.Application.DailyLogs.Queries.GetDailyLogByDate;
+using PointsTableAndExams.Application.DailyLogs.Queries.GetHistory;
 
 namespace PointsTableAndExams.Api.Controllers;
 
 [Authorize]
 public sealed class DailyLogsController(IMediator mediator) : BaseApiController(mediator)
 {
+    /// <summary>Get daily log history for a user within a date range.</summary>
+    [HttpGet("{userId:guid}/history")]
+    public async Task<IActionResult> GetHistory(Guid userId, [FromQuery] DateOnly from, [FromQuery] DateOnly to, CancellationToken ct) =>
+        FromResult(await Mediator.Send(new GetDailyLogHistoryQuery(userId, from, to), ct));
+
     /// <summary>Get daily log by user and date.</summary>
     [HttpGet("{userId:guid}/{date}")]
     public async Task<IActionResult> GetByDate(Guid userId, DateOnly date, CancellationToken ct) =>

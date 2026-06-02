@@ -1,21 +1,22 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using PointsTableAndExams.Application.Exam.Commands.Create;
+using PointsTableAndExams.Application.Exam.Commands.Delete;
 using PointsTableAndExams.Application.Exam.Commands.Update;
+using PointsTableAndExams.Application.Exam.Queries.GetAll;
 using PointsTableAndExams.Application.Exam.Queries.GetById;
 
 namespace PointsTableAndExams.Api.Controllers;
 
 [ApiController]
-[Route("api/food-items")]
-public class ExamController(IMediator mediator) : ControllerBase
+[Route("api/exams")]
+public sealed class ExamController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var query = new GetAllExamQuery();
         var result = await mediator.Send(query, cancellationToken);
-
         return Ok(result.Value);
     }
 
