@@ -16,14 +16,19 @@ public sealed class GeminiVisionService(
     ILogger<GeminiVisionService> logger) : IGeminiVisionService
 {
     private const string AnalysisPrompt = """
-        Analyze this food photo and respond ONLY with valid JSON (no markdown, no explanation):
+        Analyze this food photo. Respond ONLY with a JSON object — no markdown, no explanation, just raw JSON.
+        Use exactly this structure:
         {
-          "food_name": "name of the food in English",
-          "portion_grams": estimated weight in grams as a number,
-          "notes": "brief note on identification and portion estimate",
-          "is_confident": true or false
+          "food_name": "English name of the food",
+          "portion_grams": 150,
+          "calories_per_100g": 250,
+          "notes": "Brief description of how you identified it and estimated the portion",
+          "is_confident": true
         }
-        If you cannot identify the food, set is_confident to false and use your best guess.
+        Rules:
+        - portion_grams: integer, estimated total weight of the food shown
+        - calories_per_100g: integer, average calories per 100g for this food type (required, never omit)
+        - is_confident: false if you cannot identify the food with reasonable certainty
         """;
 
     public async Task<FoodPhotoAnalysisResult> AnalyzeAsync(
@@ -41,6 +46,7 @@ public sealed class GeminiVisionService(
             return new FoodPhotoAnalysisResult(
                 IdentifiedFoodName: "Unknown",
                 EstimatedPortionGrams: 100,
+                CaloriesPer100g: 0,
                 Notes: $"Analysis failed: {ex.Message}",
                 IsConfident: false);
         }
@@ -85,6 +91,7 @@ public sealed class GeminiVisionService(
         return new FoodPhotoAnalysisResult(
             IdentifiedFoodName: json.GetProperty("food_name").GetString() ?? "Unknown",
             EstimatedPortionGrams: json.GetProperty("portion_grams").GetDecimal(),
+            CaloriesPer100g: json.TryGetProperty("calories_per_100g", out var cal) ? cal.GetDecimal() : 0,
             Notes: json.TryGetProperty("notes", out var n) ? n.GetString() : null,
             IsConfident: json.TryGetProperty("is_confident", out var c) && c.GetBoolean());
     }

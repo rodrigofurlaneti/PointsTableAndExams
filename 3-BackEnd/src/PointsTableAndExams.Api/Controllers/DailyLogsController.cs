@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PointsTableAndExams.Application.Common.Interfaces;
 using PointsTableAndExams.Application.DailyLogs.Commands.AddLogItem;
 using PointsTableAndExams.Application.DailyLogs.Commands.CreateDailyLog;
 using PointsTableAndExams.Application.DailyLogs.Queries.GetDailyLogByDate;
@@ -9,22 +10,28 @@ using PointsTableAndExams.Application.DailyLogs.Queries.GetHistory;
 namespace PointsTableAndExams.Api.Controllers;
 
 [Authorize]
-public sealed class DailyLogsController(IMediator mediator) : BaseApiController(mediator)
+[Route("api/daily-logs")]
+public sealed class DailyLogsController(IMediator mediator, ICurrentUser currentUser)
+    : BaseApiController(mediator)
 {
-    [HttpGet("{userId:guid}/history")]
-    public async Task<IActionResult> GetHistory(Guid userId, [FromQuery] DateOnly from, [FromQuery] DateOnly to, CancellationToken ct) =>
-        FromResult(await Mediator.Send(new GetDailyLogHistoryQuery(userId, from, to), ct));
+    [HttpGet("history")]
+    public async Task<IActionResult> GetHistory(
+        [FromQuery] DateOnly from, [FromQuery] DateOnly to, CancellationToken ct) =>
+        FromResult(await Mediator.Send(
+            new GetDailyLogHistoryQuery(currentUser.Id, from, to), ct));
 
-    [HttpGet("{userId:guid}/{date}")]
-    public async Task<IActionResult> GetByDate(Guid userId, DateOnly date, CancellationToken ct) =>
-        FromResult(await Mediator.Send(new GetDailyLogByDateQuery(userId, date), ct));
+    [HttpGet("{date}")]
+    public async Task<IActionResult> GetByDate(DateOnly date, CancellationToken ct) =>
+        FromResult(await Mediator.Send(
+            new GetDailyLogByDateQuery(currentUser.Id, date), ct));
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateDailyLogRequest req, CancellationToken ct)
     {
-        var result = await Mediator.Send(new CreateDailyLogCommand(req.UserId, req.LogDate, req.Notes), ct);
+        var result = await Mediator.Send(
+            new CreateDailyLogCommand(currentUser.Id, req.LogDate, req.Notes), ct);
         if (result.IsFailure) return BadRequest(new { result.Error.Code, result.Error.Description });
-        return CreatedAtAction(nameof(GetByDate), new { userId = req.UserId, date = req.LogDate }, new { id = result.Value });
+        return CreatedAtAction(nameof(GetByDate), new { date = req.LogDate }, new { id = result.Value });
     }
 
     [HttpPost("{logId:guid}/items")]
@@ -37,5 +44,5 @@ public sealed class DailyLogsController(IMediator mediator) : BaseApiController(
     }
 }
 
-public sealed record CreateDailyLogRequest(Guid UserId, DateOnly LogDate, string? Notes);
+public sealed record CreateDailyLogRequest(DateOnly LogDate, string? Notes);
 public sealed record AddLogItemRequest(Guid FoodItemId, decimal Quantity, int PointsPerServing, TimeOnly? MealTime, string? Notes);

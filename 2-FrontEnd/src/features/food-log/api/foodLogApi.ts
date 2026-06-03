@@ -1,17 +1,14 @@
 import { apiClient } from '../../../core/api/client';
-import { useAuthStore } from '../../../core/auth/authStore';
 import type { DailyLog, AddLogItemRequest, PhotoAnalysisResult } from '../types/foodLog.types';
 
 const today = () => new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
 export const foodLogApi = {
-  /** Get today's log for the current user. Returns null if not yet created. */
+  /** Get today's log for the current user (userId comes from JWT on backend). */
   getTodayLog: async (): Promise<DailyLog | null> => {
-    const userId = useAuthStore.getState().user?.id;
-    if (!userId) return null;
     try {
       return await apiClient
-        .get<DailyLog>(`/daily-logs/${userId}/${today()}`)
+        .get<DailyLog>(`/daily-logs/${today()}`)
         .then(r => r.data);
     } catch (err: any) {
       if (err?.response?.status === 404) return null;
@@ -24,21 +21,17 @@ export const foodLogApi = {
     const existing = await foodLogApi.getTodayLog();
     if (existing) return existing;
 
-    const userId = useAuthStore.getState().user?.id;
-    const res = await apiClient.post<{ id: string }>('/daily-logs', {
-      userId,
+    await apiClient.post<{ id: string }>('/daily-logs', {
       logDate: today(),
       notes: null,
     });
-    // Fetch the newly created log
-    return await apiClient
-      .get<DailyLog>(`/daily-logs/${userId}/${today()}`)
-      .then(r => r.data);
+
+    return await foodLogApi.getTodayLog() as DailyLog;
   },
 
-  getHistory: (userId: string, from: string, to: string) =>
+  getHistory: (from: string, to: string) =>
     apiClient
-      .get(`/daily-logs/${userId}/history`, { params: { from, to } })
+      .get('/daily-logs/history', { params: { from, to } })
       .then(r => r.data),
 
   addItem: (logId: string, data: AddLogItemRequest) =>

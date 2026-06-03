@@ -29,11 +29,14 @@ export interface DailyLog {
 export interface PhotoAnalysisResult {
   identifiedFoodName: string;
   estimatedPortionGrams: number;
+  caloriesPer100g: number;
   isConfident: boolean;
   notes?: string;
   matchedFoodItemId?: string;
   matchedFoodItemName?: string;
   matchedFoodItemPoints?: number;
+  wasAutoCreated: boolean;
+  wasCatalogUpdated: boolean;
 }
 
 export interface AddLogItemRequest {

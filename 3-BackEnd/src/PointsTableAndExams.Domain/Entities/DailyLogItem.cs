@@ -16,8 +16,16 @@ public sealed class DailyLogItem : Entity
 
     private DailyLogItem() { }
 
-    internal static DailyLogItem Create(Guid logId, Guid foodItemId, decimal quantity, int pointsPerServing, TimeOnly? mealTime, string? notes)
+    // Usado internamente pelo aggregate DailyLog
+    internal static DailyLogItem Create(Guid logId, Guid foodItemId, decimal quantity, int pointsPerServing, TimeOnly? mealTime, string? notes) =>
+        CreateForLog(logId, foodItemId, quantity, pointsPerServing, mealTime, notes);
+
+    // Público para uso direto pela Application layer (bypass aggregate)
+    public static DailyLogItem CreateForLog(Guid logId, Guid foodItemId, decimal quantity, int pointsPerServing, TimeOnly? mealTime, string? notes)
     {
+        if (foodItemId == Guid.Empty) throw new DomainException("Food item id is required.");
+        if (quantity <= 0) throw new DomainException("Quantity must be greater than zero.");
+
         return new DailyLogItem
         {
             DailyLogId = logId,

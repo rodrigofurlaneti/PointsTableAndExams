@@ -8,5 +8,6 @@ public interface IGeminiVisionService
 public sealed record FoodPhotoAnalysisResult(
     string IdentifiedFoodName,
     decimal EstimatedPortionGrams,
+    decimal CaloriesPer100g,
     string? Notes,
     bool IsConfident);

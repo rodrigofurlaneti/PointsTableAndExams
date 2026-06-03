@@ -11,8 +11,11 @@ public sealed record AnalyzeFoodPhotoCommand(
 public sealed record AnalyzeFoodPhotoResult(
     string IdentifiedFoodName,
     decimal EstimatedPortionGrams,
+    decimal CaloriesPer100g,
     bool IsConfident,
     string? Notes,
     Guid? MatchedFoodItemId,
     string? MatchedFoodItemName,
-    int? MatchedFoodItemPoints);
+    int? MatchedFoodItemPoints,   // pontos atualizados no catálogo
+    bool WasAutoCreated,
+    bool WasCatalogUpdated);      // true se os pontos do catálogo foram corrigidos

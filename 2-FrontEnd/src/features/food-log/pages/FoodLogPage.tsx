@@ -7,7 +7,7 @@ import { Input } from '../../../design-system/components/Input/Input';
 import { Button } from '../../../design-system/components/Button/Button';
 import { Spinner } from '../../../shared/components/Spinner';
 import { useTodayLog, useFoodItems, useAddLogItem, useAnalyzePhoto } from '../hooks/useFoodLog';
-import type { PhotoAnalysisResult } from '../types/foodLog.types';
+import type { FoodItem, PhotoAnalysisResult } from '../types/foodLog.types';
 import styles from './FoodLogPage.module.css';
 
 const schema = z.object({
@@ -33,6 +33,7 @@ const selectStyle: React.CSSProperties = {
 export default function FoodLogPage() {
   const [mode, setMode] = useState<InputMode>('select');
   const [search, setSearch] = useState('');
+  const [selectedFoodItem, setSelectedFoodItem] = useState<FoodItem | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<PhotoAnalysisResult | null>(null);
   const [photoMealTime, setPhotoMealTime] = useState('12:00');
@@ -48,18 +49,22 @@ export default function FoodLogPage() {
     defaultValues: { quantity: 1, mealTime: '12:00' },
   });
 
-  const selectedItemId = watch('foodItemId');
-  const selectedItem = foodItems.find(fi => fi.id === selectedItemId);
-
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
+  // Armazena o item selecionado independente da busca
+  const handleFoodSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value;
+    const found = foodItems.find(fi => fi.id === id) ?? null;
+    setSelectedFoodItem(found);
+  };
+
   const onSubmit = (data: FormData) => {
-    if (!selectedItem) return;
+    if (!selectedFoodItem) return;
     addItem(
-      { foodItemId: data.foodItemId, quantity: data.quantity, pointsPerServing: selectedItem.points, mealTime: data.mealTime },
-      { onSuccess: () => reset({ quantity: 1, mealTime: '12:00' }) }
+      { foodItemId: data.foodItemId, quantity: data.quantity, pointsPerServing: selectedFoodItem.points, mealTime: data.mealTime },
+      { onSuccess: () => { reset({ quantity: 1, mealTime: '12:00' }); setSelectedFoodItem(null); } }
     );
   };
 
@@ -71,13 +76,22 @@ export default function FoodLogPage() {
     analyzePhoto(file, { onSuccess: setAnalysis });
   };
 
+  // Calcula pontos pela porção estimada: (grams/100) * (kcal/100) * 24
+  const calcPhotoPoints = (a: typeof analysis) => {
+    if (!a) return 0;
+    if (a.caloriesPer100g > 0)
+      return Math.round((a.estimatedPortionGrams / 100) * (a.caloriesPer100g / 100) * 24);
+    return a.matchedFoodItemPoints ?? 0;
+  };
+
   const handlePhotoConfirm = () => {
-    if (!analysis?.matchedFoodItemId || !analysis.matchedFoodItemPoints) return;
+    if (!analysis?.matchedFoodItemId) return;
+    const points = calcPhotoPoints(analysis);
     addItem(
       {
         foodItemId: analysis.matchedFoodItemId,
         quantity: 1,
-        pointsPerServing: analysis.matchedFoodItemPoints,
+        pointsPerServing: points,
         mealTime: photoMealTime,
         notes: `Via photo · ${analysis.estimatedPortionGrams}g`,
       },
@@ -147,7 +161,7 @@ export default function FoodLogPage() {
               <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
                 <div>
                   <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Food item</label>
-                  <select style={selectStyle} {...register('foodItemId')}>
+                  <select style={selectStyle} {...register('foodItemId')} onChange={(e) => { register('foodItemId').onChange(e); handleFoodSelect(e); }}>
                     <option value="">Select…</option>
                     {foodItems.map(fi => (
                       <option key={fi.id} value={fi.id}>{fi.name} — {fi.points}pts{fi.servingSize ? ` (${fi.servingSize})` : ''}</option>
@@ -214,33 +228,39 @@ export default function FoodLogPage() {
                     <span>{analysis.isConfident ? '✅' : '⚠️'}</span>
                     <p className={styles.analysisFood}>{analysis.identifiedFoodName}</p>
                   </div>
-                  <p className={styles.analysisMeta}>~{analysis.estimatedPortionGrams}g estimated</p>
+                  <p className={styles.analysisMeta}>
+                    ~{analysis.estimatedPortionGrams}g
+                    {analysis.caloriesPer100g > 0 && ` · ${analysis.caloriesPer100g} kcal/100g`}
+                  </p>
                   {analysis.notes && <p className={styles.analysisNotes}>{analysis.notes}</p>}
 
-                  {analysis.matchedFoodItemId ? (
-                    <>
-                      <div className={styles.matchBadge}>
-                        <span>Matched:</span>
-                        <strong>{analysis.matchedFoodItemName}</strong>
-                        <span className={styles.matchPoints}>{analysis.matchedFoodItemPoints}pts</span>
-                      </div>
-
-                      <div>
-                        <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Meal time</label>
-                        <select style={selectStyle} value={photoMealTime} onChange={e => setPhotoMealTime(e.target.value)}>
-                          {MEAL_TIMES.map(t => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                      </div>
-
-                      <Button style={{ width: '100%' }} disabled={adding} onClick={handlePhotoConfirm}>
-                        {adding ? 'Adding…' : 'Confirm & add to log'}
-                      </Button>
-                    </>
-                  ) : (
-                    <div className={styles.noMatchWarning}>
-                      Food not found in catalog. Switch to Select to add manually.
+                  {analysis.wasAutoCreated && (
+                    <div className={styles.autoCreatedBadge}>
+                      ✨ Novo alimento adicionado ao catálogo automaticamente
                     </div>
                   )}
+                  {analysis.wasCatalogUpdated && (
+                    <div className={styles.autoCreatedBadge}>
+                      🔄 Pontuação do catálogo atualizada com os valores corretos
+                    </div>
+                  )}
+
+                  <div className={styles.matchBadge}>
+                    <span>{analysis.wasAutoCreated ? 'Criado:' : 'Encontrado:'}</span>
+                    <strong>{analysis.matchedFoodItemName}</strong>
+                    <span className={styles.matchPoints}>{calcPhotoPoints(analysis)}pts</span>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Meal time</label>
+                    <select style={selectStyle} value={photoMealTime} onChange={e => setPhotoMealTime(e.target.value)}>
+                      {MEAL_TIMES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+
+                  <Button style={{ width: '100%' }} disabled={adding} onClick={handlePhotoConfirm}>
+                    {adding ? 'Adding…' : 'Confirm & add to log'}
+                  </Button>
 
                   <button type="button" className={styles.retakeBtn} onClick={resetPhoto}>
                     Try another photo

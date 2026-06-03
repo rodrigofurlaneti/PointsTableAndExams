@@ -20,9 +20,15 @@ public abstract class BaseRepository<T>(AppDbContext context) : IRepository<T>
     public async Task AddAsync(T entity, CancellationToken cancellationToken = default) =>
         await DbSet.AddAsync(entity, cancellationToken);
 
-    public Task UpdateAsync(T entity, CancellationToken cancellationToken = default)
+    public virtual Task UpdateAsync(T entity, CancellationToken cancellationToken = default)
     {
-        DbSet.Update(entity);
+        // Se já rastreado, o ChangeTracker detecta as mudanças automaticamente.
+        // DbSet.Update() em entidade rastreada marca TODOS os filhos como Modified,
+        // inclusive novos (Added), causando DbUpdateConcurrencyException.
+        var entry = Context.Entry(entity);
+        if (entry.State == EntityState.Detached)
+            DbSet.Update(entity);
+
         return Task.CompletedTask;
     }
 

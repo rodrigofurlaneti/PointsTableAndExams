@@ -269,6 +269,15 @@
   color: var(--color-primary);
 }
 
+.autoCreatedBadge {
+  font-size: var(--text-caption);
+  color: #1a6b3a;
+  background: #e8f5ee;
+  border: 1px solid #a3d4b5;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
 .noMatchWarning {
   font-size: var(--text-caption);
   color: #9a6a00;
