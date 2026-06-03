@@ -26,6 +26,16 @@ export interface DailyLog {
   items: DailyLogItem[];
 }
 
+export interface PhotoAnalysisResult {
+  identifiedFoodName: string;
+  estimatedPortionGrams: number;
+  isConfident: boolean;
+  notes?: string;
+  matchedFoodItemId?: string;
+  matchedFoodItemName?: string;
+  matchedFoodItemPoints?: number;
+}
+
 export interface AddLogItemRequest {
   foodItemId: string;
   quantity: number;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,7 +6,8 @@ import { SubNav } from '../../../design-system/components/Nav/SubNav';
 import { Input } from '../../../design-system/components/Input/Input';
 import { Button } from '../../../design-system/components/Button/Button';
 import { Spinner } from '../../../shared/components/Spinner';
-import { useTodayLog, useFoodItems, useAddLogItem } from '../hooks/useFoodLog';
+import { useTodayLog, useFoodItems, useAddLogItem, useAnalyzePhoto } from '../hooks/useFoodLog';
+import type { PhotoAnalysisResult } from '../types/foodLog.types';
 import styles from './FoodLogPage.module.css';
 
 const schema = z.object({
@@ -16,14 +17,31 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
+type InputMode = 'select' | 'photo';
 
 const MEAL_TIMES = ['07:00', '10:00', '12:00', '15:00', '19:00', '21:00'];
 
+const selectStyle: React.CSSProperties = {
+  width: '100%', padding: '12px 20px',
+  borderRadius: 'var(--radius-pill)',
+  border: '1px solid rgba(0,0,0,0.08)',
+  fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)',
+  color: 'var(--color-ink)', height: '44px',
+  background: 'var(--color-canvas)',
+};
+
 export default function FoodLogPage() {
+  const [mode, setMode] = useState<InputMode>('select');
   const [search, setSearch] = useState('');
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<PhotoAnalysisResult | null>(null);
+  const [photoMealTime, setPhotoMealTime] = useState('12:00');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const { data: log, isLoading: logLoading } = useTodayLog();
   const { data: foodItems = [] } = useFoodItems(search || undefined);
   const { mutate: addItem, isPending: adding } = useAddLogItem();
+  const { mutate: analyzePhoto, isPending: analyzing } = useAnalyzePhoto();
 
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -45,6 +63,40 @@ export default function FoodLogPage() {
     );
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAnalysis(null);
+    setPhotoPreview(URL.createObjectURL(file));
+    analyzePhoto(file, { onSuccess: setAnalysis });
+  };
+
+  const handlePhotoConfirm = () => {
+    if (!analysis?.matchedFoodItemId || !analysis.matchedFoodItemPoints) return;
+    addItem(
+      {
+        foodItemId: analysis.matchedFoodItemId,
+        quantity: 1,
+        pointsPerServing: analysis.matchedFoodItemPoints,
+        mealTime: photoMealTime,
+        notes: `Via photo · ${analysis.estimatedPortionGrams}g`,
+      },
+      {
+        onSuccess: () => {
+          setAnalysis(null);
+          setPhotoPreview(null);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        },
+      }
+    );
+  };
+
+  const resetPhoto = () => {
+    setAnalysis(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   return (
     <div className={styles.page}>
       <SubNav category="Food Log" />
@@ -61,37 +113,145 @@ export default function FoodLogPage() {
       </div>
 
       <div className={styles.body}>
-        {/* Add item panel */}
+        {/* ── Add item panel ─────────────────────────────── */}
         <div className={styles.panel}>
           <p className={styles.panelTitle}>Add food item</p>
-          <Input label="Search food" placeholder="e.g. Rice, Apple…" value={search} onChange={e => setSearch(e.target.value)} />
 
-          <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-            <div>
-              <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Food item</label>
-              <select style={{ width: '100%', padding: '12px 20px', borderRadius: 'var(--radius-pill)', border: '1px solid rgba(0,0,0,0.08)', fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', color: 'var(--color-ink)', height: '44px', background: 'var(--color-canvas)' }} {...register('foodItemId')}>
-                <option value="">Select…</option>
-                {foodItems.map(fi => (
-                  <option key={fi.id} value={fi.id}>{fi.name} — {fi.points}pts{fi.servingSize ? ` (${fi.servingSize})` : ''}</option>
-                ))}
-              </select>
-              {errors.foodItemId && <p style={{ color: '#d70015', fontSize: 'var(--text-caption)', marginTop: 4 }}>{errors.foodItemId.message}</p>}
+          {/* Mode toggle */}
+          <div className={styles.modeToggle}>
+            <button
+              type="button"
+              className={`${styles.modeBtn} ${mode === 'select' ? styles.modeBtnActive : ''}`}
+              onClick={() => setMode('select')}
+            >
+              📋 Select
+            </button>
+            <button
+              type="button"
+              className={`${styles.modeBtn} ${mode === 'photo' ? styles.modeBtnActive : ''}`}
+              onClick={() => { setMode('photo'); resetPhoto(); }}
+            >
+              📷 Photo
+            </button>
+          </div>
+
+          {/* ── SELECT mode ──────────────────────────────── */}
+          {mode === 'select' && (
+            <>
+              <Input
+                label="Search food"
+                placeholder="e.g. Rice, Apple…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+                <div>
+                  <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Food item</label>
+                  <select style={selectStyle} {...register('foodItemId')}>
+                    <option value="">Select…</option>
+                    {foodItems.map(fi => (
+                      <option key={fi.id} value={fi.id}>{fi.name} — {fi.points}pts{fi.servingSize ? ` (${fi.servingSize})` : ''}</option>
+                    ))}
+                  </select>
+                  {errors.foodItemId && <p style={{ color: '#d70015', fontSize: 'var(--text-caption)', marginTop: 4 }}>{errors.foodItemId.message}</p>}
+                </div>
+
+                <Input label="Quantity" type="number" min={0.5} max={20} step={0.5} error={errors.quantity?.message} {...register('quantity')} />
+
+                <div>
+                  <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Meal time</label>
+                  <select style={selectStyle} {...register('mealTime')}>
+                    {MEAL_TIMES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+
+                <Button type="submit" disabled={adding} style={{ width: '100%' }}>
+                  {adding ? 'Adding…' : 'Add item'}
+                </Button>
+              </form>
+            </>
+          )}
+
+          {/* ── PHOTO mode ───────────────────────────────── */}
+          {mode === 'photo' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+              />
+
+              {/* Upload area */}
+              <div className={styles.photoUploadArea} onClick={() => fileInputRef.current?.click()}>
+                {photoPreview ? (
+                  <img src={photoPreview} alt="Food preview" className={styles.photoPreview} />
+                ) : (
+                  <>
+                    <span className={styles.photoIcon}>📷</span>
+                    <p className={styles.photoHint}>Tap to take or upload a photo</p>
+                    <p className={styles.photoCaption}>jpg · png · webp</p>
+                  </>
+                )}
+              </div>
+
+              {/* Analyzing */}
+              {analyzing && (
+                <div className={styles.analysisCard}>
+                  <Spinner />
+                  <p style={{ color: 'var(--color-ink-muted-48)', fontSize: 'var(--text-caption)', textAlign: 'center', marginTop: 8 }}>
+                    Analyzing your photo…
+                  </p>
+                </div>
+              )}
+
+              {/* Result */}
+              {analysis && !analyzing && (
+                <div className={styles.analysisCard}>
+                  <div className={styles.analysisHeader}>
+                    <span>{analysis.isConfident ? '✅' : '⚠️'}</span>
+                    <p className={styles.analysisFood}>{analysis.identifiedFoodName}</p>
+                  </div>
+                  <p className={styles.analysisMeta}>~{analysis.estimatedPortionGrams}g estimated</p>
+                  {analysis.notes && <p className={styles.analysisNotes}>{analysis.notes}</p>}
+
+                  {analysis.matchedFoodItemId ? (
+                    <>
+                      <div className={styles.matchBadge}>
+                        <span>Matched:</span>
+                        <strong>{analysis.matchedFoodItemName}</strong>
+                        <span className={styles.matchPoints}>{analysis.matchedFoodItemPoints}pts</span>
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Meal time</label>
+                        <select style={selectStyle} value={photoMealTime} onChange={e => setPhotoMealTime(e.target.value)}>
+                          {MEAL_TIMES.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                      </div>
+
+                      <Button style={{ width: '100%' }} disabled={adding} onClick={handlePhotoConfirm}>
+                        {adding ? 'Adding…' : 'Confirm & add to log'}
+                      </Button>
+                    </>
+                  ) : (
+                    <div className={styles.noMatchWarning}>
+                      Food not found in catalog. Switch to Select to add manually.
+                    </div>
+                  )}
+
+                  <button type="button" className={styles.retakeBtn} onClick={resetPhoto}>
+                    Try another photo
+                  </button>
+                </div>
+              )}
             </div>
-
-            <Input label="Quantity" type="number" min={0.5} max={20} step={0.5} error={errors.quantity?.message} {...register('quantity')} />
-
-            <div>
-              <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Meal time</label>
-              <select style={{ width: '100%', padding: '12px 20px', borderRadius: 'var(--radius-pill)', border: '1px solid rgba(0,0,0,0.08)', fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', color: 'var(--color-ink)', height: '44px', background: 'var(--color-canvas)' }} {...register('mealTime')}>
-                {MEAL_TIMES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-
-            <Button type="submit" disabled={adding} style={{ width: '100%' }}>{adding ? 'Adding…' : 'Add item'}</Button>
-          </form>
+          )}
         </div>
 
-        {/* Today's items */}
+        {/* ── Today's items ──────────────────────────────── */}
         <div className={styles.list}>
           <div className={styles.listHeader}>Today's items ({log?.items.length ?? 0})</div>
           {logLoading ? <Spinner /> : !log || log.items.length === 0 ? (

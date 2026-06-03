@@ -26,6 +26,12 @@ export function useFoodItems(search?: string) {
   });
 }
 
+export function useAnalyzePhoto() {
+  return useMutation({
+    mutationFn: (file: File) => foodLogApi.analyzePhoto(file),
+  });
+}
+
 export function useAddLogItem() {
   const userId = useAuthStore(s => s.user?.id);
   const qc = useQueryClient();

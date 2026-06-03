@@ -1,6 +1,6 @@
 import { apiClient } from '../../../core/api/client';
 import { useAuthStore } from '../../../core/auth/authStore';
-import type { DailyLog, AddLogItemRequest } from '../types/foodLog.types';
+import type { DailyLog, AddLogItemRequest, PhotoAnalysisResult } from '../types/foodLog.types';
 
 const today = () => new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
@@ -50,4 +50,14 @@ export const foodLogApi = {
     apiClient
       .get('/food-items', { params: search ? { search } : undefined })
       .then(r => r.data),
+
+  analyzePhoto: async (file: File): Promise<PhotoAnalysisResult> => {
+    const formData = new FormData();
+    formData.append('photo', file);
+    return apiClient
+      .post<PhotoAnalysisResult>('/food-items/analyze-photo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then(r => r.data);
+  },
 };
