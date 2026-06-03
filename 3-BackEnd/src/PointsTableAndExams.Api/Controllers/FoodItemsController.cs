@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using PointsTableAndExams.Application.FoodItems.Commands.AnalyzePhoto;
 using PointsTableAndExams.Application.FoodItems.Commands.Create;
 using PointsTableAndExams.Application.FoodItems.Commands.Delete;
 using PointsTableAndExams.Application.FoodItems.Commands.Update;
@@ -55,5 +56,31 @@ public sealed class FoodItemsController(IMediator mediator) : ControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.Error);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Envia uma foto de um prato. O Gemini identifica o alimento e busca
+    /// na lista existente. Retorna o item correspondente (se encontrado)
+    /// com os Points para o usuário confirmar antes de registrar no log.
+    /// </summary>
+    [HttpPost("analyze-photo")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> AnalyzePhoto(
+        IFormFile photo, CancellationToken cancellationToken)
+    {
+        if (photo is null || photo.Length == 0)
+            return BadRequest(new { Code = "Validation.Required", Description = "No photo uploaded." });
+
+        using var ms = new MemoryStream();
+        await photo.CopyToAsync(ms, cancellationToken);
+
+        var result = await mediator.Send(
+            new AnalyzeFoodPhotoCommand(ms.ToArray(), photo.ContentType),
+            cancellationToken);
+
+        if (!result.IsSuccess)
+            return BadRequest(new { result.Error.Code, result.Error.Description });
+
+        return Ok(result.Value);
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using PointsTableAndExams.Application.Common.Interfaces;
 using PointsTableAndExams.Domain.Interfaces.Repositories;
+using PointsTableAndExams.Domain.Interfaces.Services;
 using PointsTableAndExams.Infrastructure.Data;
 using PointsTableAndExams.Infrastructure.Data.Repositories;
 using PointsTableAndExams.Infrastructure.Services;
@@ -41,6 +42,9 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUserService>();
+
+        // Gemini Vision
+        services.AddHttpClient<IGeminiVisionService, GeminiVisionService>();
 
         // JWT Authentication
         var jwtSettings = configuration.GetSection("JwtSettings");
