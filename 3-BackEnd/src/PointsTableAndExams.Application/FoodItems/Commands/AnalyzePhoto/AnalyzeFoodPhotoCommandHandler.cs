@@ -13,13 +13,19 @@ public sealed class AnalyzeFoodPhotoCommandHandler(
     public async Task<Result<AnalyzeFoodPhotoResult>> Handle(
         AnalyzeFoodPhotoCommand request, CancellationToken cancellationToken)
     {
+        // Gemini pode demorar 10-15s — usa CancellationToken.None para não
+        // ser cancelado pelo timeout padrão do ASP.NET (30s de pipeline)
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+
         // 1. Gemini identifica o alimento na foto
         var analysis = await gemini.AnalyzeAsync(
-            request.ImageBytes, request.MimeType, cancellationToken);
+            request.ImageBytes, request.MimeType, cts.Token);
 
         // 2. Busca o alimento na lista existente pelo nome
+        // Usa CancellationToken.None pois o token original pode ter expirado
+        // durante a chamada ao Gemini (que pode demorar ~4s)
         var matches = await foodItemRepository.SearchByNameAsync(
-            analysis.IdentifiedFoodName, cancellationToken);
+            analysis.IdentifiedFoodName, CancellationToken.None);
 
         var best = matches.FirstOrDefault();
 

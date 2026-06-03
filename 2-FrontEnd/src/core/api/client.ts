@@ -4,7 +4,7 @@ import { useAuthStore } from '../auth/authStore';
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'https://localhost:7001/api',
   headers: { 'Content-Type': 'application/json' },
-  timeout: 15_000,
+  timeout: 90_000, // 90s para suportar análise de foto via Gemini (~15s)
 });
 
 /** Inject Bearer token on every request */

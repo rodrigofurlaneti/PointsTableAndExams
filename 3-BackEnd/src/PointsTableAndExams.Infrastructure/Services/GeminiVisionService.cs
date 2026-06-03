@@ -41,15 +41,23 @@ public sealed class GeminiVisionService(
                     }
                 }
             },
-            generationConfig = new { temperature = 0.1, maxOutputTokens = 300 }
+            generationConfig = new { temperature = 0.1, maxOutputTokens = 1024 }
         };
 
-        var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={apiKey}";
+        const string url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
         try
         {
-            var response = await http.PostAsJsonAsync(url, requestBody, ct);
-            response.EnsureSuccessStatusCode();
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Add("X-goog-api-key", apiKey);
+            request.Content = JsonContent.Create(requestBody);
+            var response = await http.SendAsync(request, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync(ct);
+                logger.LogError("Gemini API error {Status}: {Body}", response.StatusCode, errorBody);
+                response.EnsureSuccessStatusCode();
+            }
 
             var json = await response.Content.ReadAsStringAsync(ct);
             var doc = JsonDocument.Parse(json);
@@ -66,6 +74,8 @@ public sealed class GeminiVisionService(
             if (text.StartsWith("```")) text = text[(text.IndexOf('\n') + 1)..];
             if (text.EndsWith("```")) text = text[..text.LastIndexOf("```")];
             text = text.Trim();
+
+            logger.LogInformation("Gemini raw text: {Text}", text);
 
             var result = JsonDocument.Parse(text).RootElement;
 
