@@ -9,6 +9,7 @@ using PointsTableAndExams.Domain.Interfaces.Repositories;
 using PointsTableAndExams.Domain.Interfaces.Services;
 using PointsTableAndExams.Infrastructure.Data;
 using PointsTableAndExams.Infrastructure.Data.Repositories;
+using PointsTableAndExams.Infrastructure.ExternalApis.Gemini.Client;
 using PointsTableAndExams.Infrastructure.Services;
 using Serilog;
 
@@ -43,8 +44,16 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUserService>();
 
-        // Gemini Vision
-        services.AddHttpClient<IGeminiVisionService, GeminiVisionService>();
+        // ── Gemini Vision (ACL + HTTP Client separados) ───────────────────────
+        services.Configure<GeminiHttpClientOptions>(
+            configuration.GetSection(GeminiHttpClientOptions.SectionName));
+
+        services.AddHttpClient<GeminiHttpClient>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(60);
+        });
+
+        services.AddScoped<IGeminiVisionService, GeminiVisionService>();
 
         // JWT Authentication
         var jwtSettings = configuration.GetSection("JwtSettings");
