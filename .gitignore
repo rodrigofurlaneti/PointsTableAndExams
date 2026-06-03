@@ -416,3 +416,5 @@ capacitor.config.ts.local
 *.jks
 *.p12
 *.pem
+3-BackEnd/src/PointsTableAndExams.Api/appsettings.json
+3-BackEnd/src/PointsTableAndExams.Api/appsettings.Development.json
