@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { foodLogApi } from '../api/foodLogApi';
 import { useAuthStore } from '../../../core/auth/authStore';
-import type { AddLogItemRequest } from '../types/foodLog.types';
+import type { AddLogItemRequest, DailyLog } from '../types/foodLog.types';
 
 export const FOOD_LOG_KEYS = {
   today: ['food-log', 'today'] as const,
@@ -27,6 +27,15 @@ export function useFoodItems(search?: string) {
 export function useAnalyzePhoto() {
   return useMutation({
     mutationFn: (file: File) => foodLogApi.analyzePhoto(file),
+  });
+}
+
+export function useFoodLogHistory() {
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated);
+  return useQuery<DailyLog[]>({
+    queryKey: ['food-log', 'history'],
+    queryFn: foodLogApi.getHistory,
+    enabled: isAuthenticated,
   });
 }
 

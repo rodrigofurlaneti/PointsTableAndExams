@@ -29,10 +29,13 @@ export const foodLogApi = {
     return await foodLogApi.getTodayLog() as DailyLog;
   },
 
-  getHistory: (from: string, to: string) =>
-    apiClient
-      .get('/daily-logs/history', { params: { from, to } })
-      .then(r => r.data),
+  getHistory: async (): Promise<DailyLog[]> => {
+    const to = today();
+    const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    return apiClient
+      .get<DailyLog[]>('/daily-logs/history', { params: { from, to } })
+      .then(r => r.data);
+  },
 
   addItem: (logId: string, data: AddLogItemRequest) =>
     apiClient

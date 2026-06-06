@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '../../../design-system/components/Input/Input';
@@ -14,7 +14,7 @@ const schema = z.object({
   username:    z.string().min(3, 'Username must be at least 3 characters'),
   password:    z.string().min(8, 'Password must be at least 8 characters'),
   birthDate:   z.string().min(1, 'Birth date is required'),
-  gender:      z.enum(['M', 'F', 'O'], { required_error: 'Gender is required' }),
+  gender:      z.enum(['M', 'F', 'O'], { error: 'Gender is required' }),
 });
 
 type FormData = z.infer<typeof schema>;
