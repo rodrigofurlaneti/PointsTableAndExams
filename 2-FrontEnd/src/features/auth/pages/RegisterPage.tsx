@@ -11,8 +11,11 @@ const schema = z.object({
   fullName:    z.string().min(2, 'Full name is required'),
   email:       z.string().email('Invalid email'),
   phoneNumber: z.string().min(8, 'Phone number is required'),
-  username:    z.string().min(3, 'Username must be at least 3 characters'),
-  password:    z.string().min(8, 'Password must be at least 8 characters'),
+  username:    z.string().min(3, 'Min 3 characters')
+                 .regex(/^[a-z0-9._]+$/, 'Only lowercase letters, digits, dots and underscores'),
+  password:    z.string().min(8, 'Min 8 characters')
+                 .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+                 .regex(/[0-9]/, 'Must contain at least one digit'),
   birthDate:   z.string().min(1, 'Birth date is required'),
   gender:      z.enum(['M', 'F', 'O'], { error: 'Gender is required' }),
 });
@@ -33,8 +36,21 @@ export default function RegisterPage() {
   const onSubmit = (data: FormData) =>
     register_({ ...data, gender: genderMap[data.gender] });
 
-  const apiError = (error as { response?: { data?: { description?: string } } })
-    ?.response?.data?.description;
+  type ApiErrorShape = {
+    response?: {
+      data?: {
+        description?: string;
+        errors?: Record<string, string[]>;
+      };
+    };
+  };
+  const errData = (error as ApiErrorShape)?.response?.data;
+  const apiErrors: string[] = errData
+    ? [
+        ...(errData.description ? [errData.description] : []),
+        ...Object.values(errData.errors ?? {}).flat(),
+      ]
+    : [];
 
   return (
     <div className={styles.page}>
@@ -44,8 +60,10 @@ export default function RegisterPage() {
           <p className={styles.subtitle}>Points Table &amp; Exams</p>
         </div>
 
-        {apiError && (
-          <div className={styles.errorBanner} role="alert">{apiError}</div>
+        {apiErrors.length > 0 && (
+          <div className={styles.errorBanner} role="alert">
+            {apiErrors.map((msg, i) => <div key={i}>{msg}</div>)}
+          </div>
         )}
 
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
