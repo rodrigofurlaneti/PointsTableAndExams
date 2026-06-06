@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using PointsTableAndExams.Infrastructure.Data;
+using PointsTableAndExams.Infrastructure.Data.Seeds;
 
 namespace PointsTableAndExams.Api.Extensions;
 
 /// <summary>
-/// Roda as migrations do EF Core automaticamente no startup.
-/// Útil em produção (Azure App Service) para manter o banco atualizado
-/// sem precisar rodar dotnet-ef manualmente.
+/// Roda as migrations do EF Core e o seed de dados de referência
+/// automaticamente no startup (Azure App Service / local dev).
 /// </summary>
 public static class DatabaseMigrationExtension
 {
@@ -17,9 +17,10 @@ public static class DatabaseMigrationExtension
 
         try
         {
-            logger.LogInformation("Checking pending EF migrations…");
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+            // ── 1. Migrations ─────────────────────────────────────────────────
+            logger.LogInformation("Checking pending EF migrations…");
             var pending = await db.Database.GetPendingMigrationsAsync();
             if (pending.Any())
             {
@@ -32,11 +33,15 @@ public static class DatabaseMigrationExtension
             {
                 logger.LogInformation("Database is up to date. No migrations needed.");
             }
+
+            // ── 2. Seed reference data ────────────────────────────────────────
+            logger.LogInformation("Running database seeder…");
+            await DatabaseSeeder.SeedAsync(db, logger);
+            logger.LogInformation("Database seeder completed.");
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while migrating the database.");
-            // Re-throw para impedir que a aplicação suba com banco desatualizado
+            logger.LogError(ex, "An error occurred during database migration/seeding.");
             throw;
         }
     }
