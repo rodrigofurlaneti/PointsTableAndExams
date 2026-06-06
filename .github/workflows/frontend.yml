@@ -1,36 +1,35 @@
-name: Frontend — Build & Deploy
+name: Frontend — Build, Deploy & E2E Gate
 
 on:
   push:
     branches: [main]
     paths:
       - '2-FrontEnd/**'
+      - '4-E2E/**'
       - '.github/workflows/frontend.yml'
   pull_request:
     branches: [main]
     paths:
       - '2-FrontEnd/**'
+      - '4-E2E/**'
+      - '.github/workflows/frontend.yml'
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
-    name: Build & Deploy to Azure Static Web Apps
+  # ─── 1. Build ─────────────────────────────────────────────────────────
+  build:
+    name: Build (React)
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Checkout ───────────────────────────────────────────────
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # ── 2. Node 20 ────────────────────────────────────────────────
-      - name: Setup Node 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: '2-FrontEnd/package-lock.json'
 
-      # ── 3. Install + Build ────────────────────────────────────────
       - name: Install dependencies
         working-directory: 2-FrontEnd
         run: npm ci
@@ -41,8 +40,35 @@ jobs:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: npm run build
 
-      # ── 4. Deploy → Azure Static Web Apps ────────────────────────
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: 2-FrontEnd/dist
+          retention-days: 1
+
+  # ─── 2. Deploy ────────────────────────────────────────────────────────
+  # • Pull request → Azure SWA creates a preview environment automatically
+  # • Push to main  → Azure SWA deploys to production
+  # The deployed URL is passed to the E2E job via job output.
+  deploy:
+    name: Deploy to Azure SWA
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      url: ${{ steps.swa.outputs.static_web_app_url }}
+
+    steps:
+      - uses: actions/checkout@v4    # required by Azure SWA action
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: 2-FrontEnd/dist
+
       - name: Deploy to Azure Static Web Apps
+        id: swa
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
@@ -51,3 +77,63 @@ jobs:
           app_location:                     '2-FrontEnd/dist'
           output_location:                  ''
           skip_app_build:                   true
+
+  # ─── 3. E2E Gate ──────────────────────────────────────────────────────
+  # Runs Playwright (Chromium only — fast) against the just-deployed URL.
+  # • On PRs   → acts as a merge gate; failing E2E blocks the PR
+  # • On main  → acts as a post-deploy smoke test
+  #
+  # Add "e2e / E2E Tests (Chromium)" as a required status check in
+  # GitHub → Settings → Branches → main → Branch protection rules.
+  e2e:
+    name: E2E Tests (Chromium)
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '4-E2E/package-lock.json'
+
+      - name: Install E2E dependencies
+        working-directory: 4-E2E
+        run: npm ci
+
+      - name: Install Playwright (Chromium only)
+        working-directory: 4-E2E
+        run: npx playwright install --with-deps chromium
+
+      - name: Run functional tests
+        working-directory: 4-E2E
+        env:
+          # Falls back to the secret if Azure SWA does not output the URL
+          BASE_URL:           ${{ needs.deploy.outputs.url || secrets.E2E_BASE_URL }}
+          TEST_USER_EMAIL:    ${{ secrets.E2E_TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+        run: npx playwright test tests/functional --project=chromium --reporter=list,html
+
+      - name: Run non-functional tests
+        working-directory: 4-E2E
+        env:
+          BASE_URL: ${{ needs.deploy.outputs.url || secrets.E2E_BASE_URL }}
+        run: npx playwright test tests/non-functional --project=chromium --reporter=list,html
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_number }}
+          path: 4-E2E/playwright-report/
+          retention-days: 14
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_number }}
+          path: 4-E2E/test-results/
+          retention-days: 7

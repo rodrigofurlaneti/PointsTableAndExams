@@ -1,0 +1,67 @@
+name: E2E — Full Cross-Browser (Manual)
+
+# This workflow is for on-demand, full cross-browser validation.
+# The CI/CD E2E gate (Chromium only) lives in frontend.yml.
+#
+# Run this manually from GitHub → Actions → "E2E — Full Cross-Browser"
+# to verify all browsers before a release or after a major change.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Target URL (leave blank to use secret E2E_BASE_URL)'
+        required: false
+        default: ''
+
+jobs:
+  e2e:
+    name: Playwright E2E (Chromium + Firefox + WebKit)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '4-E2E/package-lock.json'
+
+      - name: Install E2E dependencies
+        working-directory: 4-E2E
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: 4-E2E
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Run functional tests
+        working-directory: 4-E2E
+        env:
+          BASE_URL:           ${{ inputs.base_url || secrets.E2E_BASE_URL }}
+          TEST_USER_EMAIL:    ${{ secrets.E2E_TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+        run: npx playwright test tests/functional --reporter=list,html
+
+      - name: Run non-functional tests
+        working-directory: 4-E2E
+        env:
+          BASE_URL: ${{ inputs.base_url || secrets.E2E_BASE_URL }}
+        run: npx playwright test tests/non-functional --reporter=list,html
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-cross-browser
+          path: 4-E2E/playwright-report/
+          retention-days: 14
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-cross-browser
+          path: 4-E2E/test-results/
+          retention-days: 7

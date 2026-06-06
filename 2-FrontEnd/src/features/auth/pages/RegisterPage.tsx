@@ -79,6 +79,7 @@ export default function RegisterPage() {
               Gender
             </label>
             <select
+              aria-label="Gender"
               style={{ width: '100%', padding: '12px 20px', borderRadius: 'var(--radius-pill)', border: '1px solid rgba(0,0,0,0.08)', fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', color: 'var(--color-ink)', height: '44px', background: 'var(--color-canvas)' }}
               {...register('gender')}
               aria-invalid={!!errors.gender}
