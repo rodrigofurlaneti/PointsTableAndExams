@@ -4,6 +4,7 @@ import { ProtectedRoute } from '../auth/ProtectedRoute';
 import { GlobalNav } from '../../design-system/components/Nav/GlobalNav';
 import { Footer } from '../../design-system/components/Footer/Footer';
 import { Spinner } from '../../shared/components/Spinner';
+import { ChunkErrorBoundary } from '../../shared/components/ChunkErrorBoundary';
 
 /* ── Auth ──────────────────────────────────────────────────────────────── */
 const LoginPage        = lazy(() => import('../../features/auth/pages/LoginPage'));
@@ -35,9 +36,11 @@ function RootLayout() {
     <>
       <GlobalNav />
       <main style={{ paddingTop: '44px' }}>
-        <Suspense fallback={<Spinner fullPage />}>
-          <Outlet />
-        </Suspense>
+        <ChunkErrorBoundary>
+          <Suspense fallback={<Spinner fullPage />}>
+            <Outlet />
+          </Suspense>
+        </ChunkErrorBoundary>
       </main>
       <Footer />
     </>
