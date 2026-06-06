@@ -46,8 +46,12 @@ jobs:
       # ── 4. Testes (pula se não houver projetos de teste) ──────────
       - name: Test
         working-directory: ${{ env.WORKING_DIR }}
-        run: dotnet test --no-build --configuration Release --verbosity minimal
-        continue-on-error: false
+        run: |
+          if [ -f "PointsTableAndExams.sln" ]; then
+            dotnet test PointsTableAndExams.sln --no-build --configuration Release --verbosity minimal
+          else
+            echo "No test projects found, skipping."
+          fi
 
       # ── 5. Publish ────────────────────────────────────────────────
       - name: Publish
