@@ -1,6 +1,7 @@
 using PointsTableAndExams.Application;
 using PointsTableAndExams.Infrastructure;
 using PointsTableAndExams.Api.Middlewares;
+using PointsTableAndExams.Api.Extensions;
 using Serilog;
 using Microsoft.OpenApi.Models;
 
@@ -13,16 +14,26 @@ builder.Host.UseSerilog((ctx, lc) =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// CORS — permite o frontend em dev e prod
+// CORS — lê origins do config (appsettings / env vars Azure)
+// Em produção, adicione "AllowedOrigins:0" = "https://<seu-app>.azurestaticapps.net"
+var allowedOrigins = builder.Configuration
+    .GetSection("AllowedOrigins")
+    .Get<string[]>()
+    ?? [];
+
+var defaultOrigins = new[]
+{
+    "http://localhost:5173",
+    "http://localhost:4173",
+    "https://localhost:5173",
+    "https://localhost:4173",
+};
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
         policy
-            .WithOrigins(
-                "http://localhost:5173",   // Vite dev server
-                "http://localhost:4173",   // Vite preview
-                "https://localhost:5173",
-                "https://localhost:4173")
+            .WithOrigins([.. defaultOrigins, .. allowedOrigins])
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
@@ -52,6 +63,9 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Migrations automáticas no startup (roda antes de qualquer request)
+await app.MigrateDatabaseAsync();
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -72,6 +86,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program { }

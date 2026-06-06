@@ -1,0 +1,65 @@
+name: Backend — Build & Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '3-BackEnd/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '3-BackEnd/**'
+  workflow_dispatch:   # permite rodar manualmente no GitHub
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  WORKING_DIR:    '3-BackEnd'
+  API_PROJECT:    'src/PointsTableAndExams.Api/PointsTableAndExams.Api.csproj'
+  PUBLISH_DIR:    '3-BackEnd/publish'
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy to Azure App Service
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout ───────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. .NET 9 ─────────────────────────────────────────────────
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # ── 3. Restore + Build ────────────────────────────────────────
+      - name: Restore
+        working-directory: ${{ env.WORKING_DIR }}
+        run: dotnet restore ${{ env.API_PROJECT }}
+
+      - name: Build (Release)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: dotnet build ${{ env.API_PROJECT }} --no-restore --configuration Release
+
+      # ── 4. Testes (pula se não houver projetos de teste) ──────────
+      - name: Test
+        working-directory: ${{ env.WORKING_DIR }}
+        run: dotnet test --no-build --configuration Release --verbosity minimal
+        continue-on-error: false
+
+      # ── 5. Publish ────────────────────────────────────────────────
+      - name: Publish
+        working-directory: ${{ env.WORKING_DIR }}
+        run: dotnet publish ${{ env.API_PROJECT }} --no-build --configuration Release --output ./publish
+
+      # ── 6. Deploy → Azure App Service ────────────────────────────
+      #   Só executa em push (não em PR) e só se não for pull_request
+      - name: Deploy to Azure App Service
+        if: github.event_name != 'pull_request'
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name:        ${{ secrets.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package:         ${{ env.PUBLISH_DIR }}
