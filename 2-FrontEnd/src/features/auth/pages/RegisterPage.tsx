@@ -28,7 +28,10 @@ export default function RegisterPage() {
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
-  const onSubmit = (data: FormData) => register_(data);
+  const genderMap: Record<string, 0 | 1 | 2> = { F: 0, M: 1, O: 2 };
+
+  const onSubmit = (data: FormData) =>
+    register_({ ...data, gender: genderMap[data.gender] });
 
   const apiError = (error as { response?: { data?: { description?: string } } })
     ?.response?.data?.description;
