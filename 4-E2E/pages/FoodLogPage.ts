@@ -4,12 +4,17 @@ export class FoodLogPage {
   readonly page: Page;
   readonly title: Locator;
   readonly selectModeButton: Locator;
+  /** Now labelled "📷 Camera" */
   readonly photoModeButton: Locator;
+  /** "🖼️ Gallery" — opens device file picker (no capture) */
+  readonly galleryModeButton: Locator;
   readonly foodItemSelect: Locator;
   readonly quantityInput: Locator;
   readonly addItemButton: Locator;
-  readonly photoUploadArea: Locator;
+  /** First hidden file input — used by Camera mode (capture="environment") */
   readonly fileInput: Locator;
+  /** Second hidden file input — used by Gallery mode (no capture) */
+  readonly galleryFileInput: Locator;
   readonly analyzingIndicator: Locator;
   readonly analysisCard: Locator;
   readonly confirmPhotoButton: Locator;
@@ -18,16 +23,17 @@ export class FoodLogPage {
   constructor(page: Page) {
     this.page               = page;
     this.title              = page.getByRole('heading', { name: /daily food log/i });
-    // Mode toggle buttons (text includes emoji)
+    // Mode toggle buttons
     this.selectModeButton   = page.getByRole('button', { name: /select/i });
-    this.photoModeButton    = page.getByRole('button', { name: /photo/i });
+    this.photoModeButton    = page.getByRole('button', { name: /camera/i });
+    this.galleryModeButton  = page.getByRole('button', { name: /gallery/i });
     // Form fields in select mode
     this.foodItemSelect     = page.locator('select').first();
     this.quantityInput      = page.locator('#quantity');
     this.addItemButton      = page.getByRole('button', { name: /^add item$/i });
-    // Photo mode
-    this.photoUploadArea    = page.locator('input[type="file"]');
-    this.fileInput          = page.locator('input[type="file"]');
+    // File inputs — both always in DOM (hidden). Use .first() / .nth(1) to avoid strict-mode errors.
+    this.fileInput          = page.locator('input[type="file"]').first();
+    this.galleryFileInput   = page.locator('input[type="file"]').nth(1);
     this.analyzingIndicator = page.getByText(/analyzing your photo/i);
     this.analysisCard       = page.getByText(/confirm & add to log/i);
     this.confirmPhotoButton = page.getByRole('button', { name: /confirm & add to log/i });
@@ -47,5 +53,9 @@ export class FoodLogPage {
 
   async switchToPhotoMode() {
     await this.photoModeButton.click();
+  }
+
+  async switchToGalleryMode() {
+    await this.galleryModeButton.click();
   }
 }

@@ -59,10 +59,19 @@ test.describe('Navigation — authenticated', () => {
     await expect(page).toHaveURL(/\/exams/);
   });
 
-  // ── Logo ─────────────────────────────────────────────────────────
-  test('PT&E logo navigates to root (dashboard)', async ({ authenticatedPage: page }) => {
+  // ── Logo / Branding ──────────────────────────────────────────────
+  test('VitaLog logo link is visible in nav', async ({ authenticatedPage: page }) => {
+    const nav = page.locator('nav[aria-label="Global navigation"]');
+    await expect(nav.getByRole('link', { name: /vitalog home/i })).toBeVisible();
+  });
+
+  test('VitaLog logo navigates to root (dashboard)', async ({ authenticatedPage: page }) => {
     await page.goto('/food-log', { waitUntil: 'networkidle' });
-    await page.getByRole('link', { name: /pointstable home/i }).click();
+    await page.getByRole('link', { name: /vitalog home/i }).click();
     await expect(page).toHaveURL(/\/(dashboard|)$/);
+  });
+
+  test('page title is VitaLog', async ({ authenticatedPage: page }) => {
+    await expect(page).toHaveTitle(/vitalog/i);
   });
 });
