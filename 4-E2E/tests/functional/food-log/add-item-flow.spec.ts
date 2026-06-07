@@ -78,7 +78,7 @@ test.describe('Food Log — add item flow', () => {
   });
 
   // ── Mode toggle ──────────────────────────────────────────────────
-  test('switching from select to photo mode hides the food select', async ({ authenticatedPage: page }) => {
+  test('switching from select to camera mode hides the food select', async ({ authenticatedPage: page }) => {
     const foodLogPage = new FoodLogPage(page);
     await foodLogPage.goto();
     await expect(foodLogPage.foodItemSelect).toBeVisible();
@@ -92,6 +92,60 @@ test.describe('Food Log — add item flow', () => {
     await foodLogPage.switchToPhotoMode();
     await foodLogPage.selectModeButton.click();
     await expect(foodLogPage.foodItemSelect).toBeVisible();
+  });
+
+  // ── Gallery mode ─────────────────────────────────────────────────
+  test('"Gallery" tab button is visible on food log page', async ({ authenticatedPage: page }) => {
+    const foodLogPage = new FoodLogPage(page);
+    await foodLogPage.goto();
+    await expect(foodLogPage.galleryModeButton).toBeVisible();
+  });
+
+  test('switching to Gallery mode hides the food select', async ({ authenticatedPage: page }) => {
+    const foodLogPage = new FoodLogPage(page);
+    await foodLogPage.goto();
+    await expect(foodLogPage.foodItemSelect).toBeVisible();
+    await foodLogPage.switchToGalleryMode();
+    await expect(foodLogPage.foodItemSelect).not.toBeVisible();
+  });
+
+  test('Gallery mode shows device file picker hint text', async ({ authenticatedPage: page }) => {
+    const foodLogPage = new FoodLogPage(page);
+    await foodLogPage.goto();
+    await foodLogPage.switchToGalleryMode();
+    await expect(page.getByText(/tap to choose a photo from your device/i)).toBeVisible();
+  });
+
+  test('switching from Gallery back to Select shows the food select', async ({ authenticatedPage: page }) => {
+    const foodLogPage = new FoodLogPage(page);
+    await foodLogPage.goto();
+    await foodLogPage.switchToGalleryMode();
+    await foodLogPage.selectModeButton.click();
+    await expect(foodLogPage.foodItemSelect).toBeVisible();
+  });
+
+  test('Gallery mode: uploading a photo triggers analysis', async ({ authenticatedPage: page }) => {
+    const foodLogPage = new FoodLogPage(page);
+    await foodLogPage.goto();
+    await foodLogPage.switchToGalleryMode();
+
+    // Inject a minimal 1×1 JPEG directly via the hidden gallery file input
+    const minimalJpeg = Buffer.from(
+      '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0a' +
+      'HBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAARCAABAAEDASIAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACf/' +
+      'EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AJQAB/9k=',
+      'base64',
+    );
+    await foodLogPage.galleryFileInput.setInputFiles({
+      name: 'gallery-test.jpg',
+      mimeType: 'image/jpeg',
+      buffer: minimalJpeg,
+    });
+
+    const analyzing = page.getByText(/analyzing your photo/i);
+    const result    = page.getByRole('button', { name: /confirm & add to log/i });
+    const error     = page.getByRole('alert');
+    await expect(analyzing.or(result).or(error)).toBeVisible({ timeout: 25_000 });
   });
 
   // ── Meal time select ─────────────────────────────────────────────

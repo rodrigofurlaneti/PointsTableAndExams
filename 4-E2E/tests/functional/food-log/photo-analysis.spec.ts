@@ -21,7 +21,7 @@ function getTestImagePath(): string {
 }
 
 test.describe('Food Log — photo mode', () => {
-  test('📷 Photo button is visible on food log page', async ({ authenticatedPage: page }) => {
+  test('📷 Camera button is visible on food log page', async ({ authenticatedPage: page }) => {
     const foodLogPage = new FoodLogPage(page);
     await foodLogPage.goto();
     await expect(foodLogPage.photoModeButton).toBeVisible();

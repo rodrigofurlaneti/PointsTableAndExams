@@ -54,4 +54,17 @@ test.describe('Login — functional', () => {
   test('password field is masked', async ({ page }) => {
     await expect(page.locator('#password')).toHaveAttribute('type', 'password');
   });
+
+  // ── Branding ─────────────────────────────────────────────────────
+  test('login page shows VitaLog logo', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: /vitalog/i })).toBeVisible();
+  });
+
+  test('login page shows tagline "Your health. Tracked."', async ({ page }) => {
+    await expect(page.getByText(/your health\. tracked\./i)).toBeVisible();
+  });
+
+  test('page title is VitaLog', async ({ page }) => {
+    await expect(page).toHaveTitle(/vitalog/i);
+  });
 });
