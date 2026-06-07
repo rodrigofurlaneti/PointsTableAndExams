@@ -69,7 +69,10 @@ public sealed class GeminiVisionService(
                     }
                 ])
             ],
-            GenerationConfig: new GeminiGenerationConfig(Temperature: 0.1, MaxOutputTokens: 1024)
+            GenerationConfig: new GeminiGenerationConfig(
+                Temperature: 0.1,
+                MaxOutputTokens: 8192,
+                ThinkingConfig: new GeminiThinkingConfig(ThinkingBudget: 0))
         );
 
     // ── Private: ACL translation ──────────────────────────────────────────────
@@ -79,7 +82,7 @@ public sealed class GeminiVisionService(
         var rawText = response.Candidates
             .FirstOrDefault()
             ?.Content.Parts
-            .FirstOrDefault()
+            .FirstOrDefault(p => p.Thought != true && p.Text is not null)
             ?.Text ?? "{}";
 
         var text = StripMarkdownFences(rawText);
