@@ -1,7 +1,16 @@
 {
-  "name": "2-frontend",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@rodrigofurlaneti/vitalog-frontend",
+  "version": "1.1.0",
+  "description": "VitaLog — React 19 SPA for daily food tracking and exam management",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rodrigofurlaneti/PointsTableAndExams"
+  },
+  "author": "Rodrigo Furlaneti",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

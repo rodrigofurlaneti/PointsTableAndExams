@@ -26,6 +26,19 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <!-- NuGet package metadata -->
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageId>VitaLog.Application</PackageId>
+    <Version>1.1.0</Version>
+    <Authors>Rodrigo Furlaneti</Authors>
+    <Company>VitaLog</Company>
+    <Description>VitaLog Application layer — CQRS commands/queries with MediatR, FluentValidation pipeline, use-case handlers.</Description>
+    <PackageTags>vitalog;application;cqrs;mediatr;clean-architecture;dotnet9</PackageTags>
+    <PackageProjectUrl>https://github.com/rodrigofurlaneti/PointsTableAndExams</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/rodrigofurlaneti/PointsTableAndExams</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 </Project>

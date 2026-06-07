@@ -1,0 +1,46 @@
+name: NuGet — Publish to GitHub Packages
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Pack & Push NuGet packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+          source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore
+        run: dotnet restore 3-BackEnd/PointsTableAndExams.sln
+
+      - name: Pack VitaLog.Domain
+        run: |
+          dotnet pack 3-BackEnd/src/PointsTableAndExams.Domain/PointsTableAndExams.Domain.csproj \
+            -c Release --no-restore -o ./nupkg
+
+      - name: Pack VitaLog.Application
+        run: |
+          dotnet pack 3-BackEnd/src/PointsTableAndExams.Application/PointsTableAndExams.Application.csproj \
+            -c Release --no-restore -o ./nupkg
+
+      - name: Push packages to GitHub Packages
+        run: |
+          dotnet nuget push "./nupkg/*.nupkg" \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json \
+            --skip-duplicate

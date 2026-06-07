@@ -1,0 +1,39 @@
+name: npm — Publish to GitHub Packages
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Build & Publish npm package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@rodrigofurlaneti'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: 2-FrontEnd
+
+      - name: Build
+        run: npm run build
+        working-directory: 2-FrontEnd
+
+      - name: Publish to GitHub Packages
+        run: npm publish --access public
+        working-directory: 2-FrontEnd
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
