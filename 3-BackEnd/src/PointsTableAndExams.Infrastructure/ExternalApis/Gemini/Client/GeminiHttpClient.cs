@@ -36,7 +36,7 @@ public sealed class GeminiHttpClient(
         {
             _credential ??= GoogleCredential
                 .FromJson(serviceAccountJson)
-                .CreateScoped("https://www.googleapis.com/auth/generative-language");
+                .CreateScoped("https://www.googleapis.com/auth/cloud-platform");
         }
         return _credential;
     }
