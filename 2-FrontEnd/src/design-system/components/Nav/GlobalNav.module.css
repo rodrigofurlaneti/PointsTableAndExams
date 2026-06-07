@@ -23,10 +23,14 @@
 .logo {
   color: #ffffff;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   font-family: var(--font-display);
-  letter-spacing: -0.12px;
+  letter-spacing: -0.3px;
   text-decoration: none;
+}
+
+.logoAccent {
+  color: #34d399;
 }
 
 .links {

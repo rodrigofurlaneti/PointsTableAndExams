@@ -32,8 +32,8 @@ export default function LoginPage() {
     <div className={styles.page}>
       <div className={styles.card}>
         <div className={styles.header}>
-          <h1 className={styles.logo}>PT&amp;E</h1>
-          <p className={styles.subtitle}>Points Table &amp; Exams</p>
+          <h1 className={styles.logo}>Vita<span style={{ color: '#34d399' }}>Log</span></h1>
+          <p className={styles.subtitle}>Your health. Tracked.</p>
         </div>
 
         {apiError && (

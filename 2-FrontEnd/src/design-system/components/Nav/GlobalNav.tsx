@@ -26,8 +26,8 @@ export function GlobalNav() {
   return (
     <nav className={styles.nav} aria-label="Global navigation">
       <div className={styles.inner}>
-        <Link to="/" className={styles.logo} aria-label="PointsTable home">
-          PT&E
+        <Link to="/" className={styles.logo} aria-label="VitaLog home">
+          Vita<span className={styles.logoAccent}>Log</span>
         </Link>
 
         {isAuthenticated && (
