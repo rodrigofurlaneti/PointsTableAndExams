@@ -1,13 +1,27 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../core/auth/authStore';
+import { useTodayLog } from '../../food-log/hooks/useFoodLog';
+import { useMyExamRequests } from '../../exams/hooks/useExams';
 import { Button } from '../../../design-system/components/Button/Button';
 import { StoreCard } from '../../../design-system/components/Card/StoreCard';
 import styles from './DashboardPage.module.css';
+
+const DAILY_LIMIT = 300;
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
   const firstName = user?.fullName?.split(' ')[0] ?? 'there';
+
+  const { data: todayLog } = useTodayLog();
+  const { data: examRequests = [] } = useMyExamRequests();
+
+  const todayPoints   = todayLog?.totalPoints ?? 0;
+  const todayItems    = todayLog?.items?.length ?? 0;
+  const pendingExams  = examRequests
+    .flatMap((r) => r.items)
+    .filter((i) => !i.isCompleted).length;
+  const progressPct   = Math.min((todayPoints / DAILY_LIMIT) * 100, 100).toFixed(1);
 
   return (
     <div className={styles.page}>
@@ -27,19 +41,19 @@ export default function DashboardPage() {
           <div className={styles.statCard}>
             <p className={styles.statLabel}>Today's Points</p>
             <p className={styles.statValue}>
-              0 <span className={styles.statUnit}>/ 300</span>
+              {todayPoints} <span className={styles.statUnit}>/ {DAILY_LIMIT}</span>
             </p>
             <div className={styles.progressBar}>
-              <div className={styles.progressFill} style={{ width: '0%' }} />
+              <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
             </div>
           </div>
           <div className={styles.statCard}>
             <p className={styles.statLabel}>Food items today</p>
-            <p className={styles.statValue}>0</p>
+            <p className={styles.statValue}>{todayItems}</p>
           </div>
           <div className={styles.statCard}>
             <p className={styles.statLabel}>Pending exams</p>
-            <p className={styles.statValue}>0</p>
+            <p className={styles.statValue}>{pendingExams}</p>
           </div>
         </div>
       </section>
