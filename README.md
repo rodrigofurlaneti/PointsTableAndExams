@@ -1,6 +1,8 @@
-# PointsTableAndExams
+# VitaLog
 
-Sistema completo para controle diário de pontos alimentares e gerenciamento de exames laboratoriais, desenvolvido com as melhores práticas de arquitetura de software.
+**VitaLog** é uma plataforma fullstack para controle diário de pontos alimentares e gerenciamento de exames laboratoriais, desenvolvida com as melhores práticas de arquitetura de software.
+
+🌐 **Produção:** [vitalog.app.br](https://vitalog.app.br)
 
 ---
 
@@ -15,6 +17,7 @@ Sistema completo para controle diário de pontos alimentares e gerenciamento de 
 - [Camadas da API](#camadas-da-api)
 - [Frontend](#frontend)
 - [Testes](#testes)
+- [Deploy e CI/CD](#deploy-e-cicd)
 - [Como Executar](#como-executar)
 - [Decisões Arquiteturais](#decisões-arquiteturais)
 
@@ -22,10 +25,12 @@ Sistema completo para controle diário de pontos alimentares e gerenciamento de 
 
 ## Visão Geral
 
-O **PointsTableAndExams** é uma plataforma que permite:
+O **VitaLog** é uma plataforma que permite:
 
 - **Tabela de Pontos**: controle diário do consumo alimentar baseado em um sistema de pontos (máx. 300 pts/dia), com mais de 200 alimentos categorizados.
 - **Gestão de Exames**: solicitação, acompanhamento e registro de resultados de exames laboratoriais organizados em 12 categorias clínicas.
+- **Análise por Foto (IA)**: identificação automática de alimentos via foto usando Google Gemini Vision — suporta câmera e galeria do dispositivo.
+- **Dashboard Inteligente**: painel com dados reais de pontos do dia, itens registrados e exames pendentes.
 - **Autenticação JWT**: cadastro e login de usuários com tokens seguros.
 
 ---
@@ -47,8 +52,9 @@ O **PointsTableAndExams** é uma plataforma que permite:
 | **JWT Bearer** | 9.0 | Autenticação |
 | **Serilog** | 9.0 | Logging estruturado |
 | **Swashbuckle (Swagger)** | 7.3 | Documentação da API |
+| **Google Gemini Vision** | 2.0 Flash | Análise de fotos de alimentos |
 
-### Testes
+### Testes Backend (.NET)
 
 | Tecnologia | Versão | Uso |
 |---|---|---|
@@ -60,7 +66,16 @@ O **PointsTableAndExams** é uma plataforma que permite:
 | **Testcontainers (MsSql)** | 4.4 | SQL Server em Docker para integração |
 | **Microsoft.AspNetCore.Mvc.Testing** | 9.0 | WebApplicationFactory |
 | **Reqnroll** | 3.0 | BDD / Gherkin (SpecFlow successor) |
-| **Microsoft.Playwright** | 1.52 | Testes E2E |
+| **Microsoft.Playwright** | 1.52 | Testes E2E (.NET) |
+
+### Testes E2E (Playwright TypeScript)
+
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| **Playwright** | 1.52 | Framework E2E cross-browser |
+| **TypeScript** | 5+ | Linguagem dos testes |
+| **@axe-core/playwright** | 4.x | Auditoria de acessibilidade WCAG 2.1 AA |
+| **Page Object Model** | — | Padrão de organização dos testes |
 
 ### Frontend
 
@@ -267,137 +282,104 @@ PointsTableAndExams/
 │   ├── TabelaPontos_Pagina2.pdf
 │   └── TabelaPontos_Pagina3.pdf
 │
+├── 2-FrontEnd/                               ← SPA React + TypeScript
+│   ├── index.html                            ← title: VitaLog
+│   ├── vite.config.ts                        ← Proxy /api → backend :7001
+│   └── src/
+│       ├── design-system/                    ← Tokens CSS + componentes
+│       ├── core/                             ← API client, Auth store, Router
+│       ├── features/
+│       │   ├── auth/                         ← Login + Register
+│       │   ├── dashboard/                    ← Dashboard com dados reais
+│       │   ├── food-log/                     ← Log diário + Histórico + IA foto
+│       │   └── exams/                        ← Solicitações de exames
+│       └── shared/                           ← Spinner, ErrorBoundary
+│
 ├── 3-BackEnd/                                ← Solução .NET 9
 │   ├── PointsTableAndExams.sln
-│   │
 │   ├── src/
 │   │   ├── PointsTableAndExams.Domain/
-│   │   │   ├── Common/
-│   │   │   │   ├── AggregateRoot.cs          ← Dispara Domain Events
-│   │   │   │   ├── Entity.cs                 ← Id, CreatedAt, UpdatedAt
-│   │   │   │   ├── IDomainEvent.cs
-│   │   │   │   ├── Result.cs                 ← Result Pattern (sem exceções no fluxo)
-│   │   │   │   └── ValueObject.cs
-│   │   │   ├── Entities/
-│   │   │   │   ├── User.cs                   ← Aggregate Root
-│   │   │   │   ├── DailyLog.cs               ← Aggregate Root
-│   │   │   │   ├── DailyLogItem.cs
-│   │   │   │   ├── ExamRequest.cs            ← Aggregate Root
-│   │   │   │   ├── ExamRequestItem.cs
-│   │   │   │   ├── FoodCategory.cs
-│   │   │   │   ├── FoodItem.cs
-│   │   │   │   ├── ExamCategory.cs
-│   │   │   │   └── Exam.cs
-│   │   │   ├── ValueObjects/
-│   │   │   │   ├── Email.cs                  ← Validação + normalização
-│   │   │   │   ├── PhoneNumber.cs
-│   │   │   │   └── Points.cs                 ← Imutável, nunca negativo
-│   │   │   ├── DomainEvents/
-│   │   │   │   ├── UserCreatedEvent.cs
-│   │   │   │   ├── DailyLogCreatedEvent.cs
-│   │   │   │   ├── ExamRequestCreatedEvent.cs
-│   │   │   │   └── ExamCompletedEvent.cs
-│   │   │   ├── Enums/
-│   │   │   │   └── Gender.cs
-│   │   │   ├── Exceptions/
-│   │   │   │   └── DomainException.cs
-│   │   │   └── Interfaces/Repositories/
-│   │   │       ├── IRepository.cs            ← Interface genérica
-│   │   │       ├── IUnitOfWork.cs
-│   │   │       ├── IUserRepository.cs
-│   │   │       ├── IDailyLogRepository.cs
-│   │   │       ├── IExamRequestRepository.cs
-│   │   │       ├── IFoodCategoryRepository.cs
-│   │   │       ├── IFoodItemRepository.cs
-│   │   │       ├── IExamCategoryRepository.cs
-│   │   │       └── IExamRepository.cs
+│   │   │   ├── Common/                       ← AggregateRoot, Entity, Result, ValueObject
+│   │   │   ├── Entities/                     ← User, DailyLog, ExamRequest, FoodItem, Exam...
+│   │   │   ├── ValueObjects/                 ← Email, PhoneNumber, Points
+│   │   │   ├── DomainEvents/                 ← UserCreated, DailyLogCreated, ExamCompleted...
+│   │   │   ├── Enums/                        ← Gender
+│   │   │   ├── Exceptions/                   ← DomainException
+│   │   │   └── Interfaces/Repositories/      ← IRepository<T>, IUnitOfWork, ...
 │   │   │
 │   │   ├── PointsTableAndExams.Application/
-│   │   │   ├── Common/
-│   │   │   │   ├── Behaviors/
-│   │   │   │   │   ├── LoggingBehavior.cs    ← MediatR Pipeline
-│   │   │   │   │   └── ValidationBehavior.cs ← MediatR Pipeline
-│   │   │   │   └── Interfaces/
-│   │   │   │       ├── ICurrentUser.cs
-│   │   │   │       ├── IPasswordHasher.cs
-│   │   │   │       └── ITokenService.cs
-│   │   │   ├── Users/
-│   │   │   │   ├── Commands/CreateUser/      ← Command + Handler + Validator
-│   │   │   │   ├── Commands/Login/
-│   │   │   │   └── Queries/GetUserById/      ← Query + Handler + Response DTO
-│   │   │   ├── DailyLogs/
-│   │   │   │   ├── Commands/CreateDailyLog/
-│   │   │   │   ├── Commands/AddLogItem/
-│   │   │   │   └── Queries/GetDailyLogByDate/
-│   │   │   ├── ExamRequests/
-│   │   │   │   ├── Commands/CreateExamRequest/
-│   │   │   │   ├── Commands/MarkExamCompleted/
-│   │   │   │   └── Queries/GetExamRequestById/
-│   │   │   └── DependencyInjection.cs        ← AddApplication()
+│   │   │   ├── Common/Behaviors/             ← LoggingBehavior, ValidationBehavior
+│   │   │   ├── Users/                        ← CreateUser, Login, GetUserById
+│   │   │   ├── DailyLogs/                    ← CreateDailyLog, AddLogItem, GetDailyLogByDate
+│   │   │   ├── ExamRequests/                 ← CreateExamRequest, MarkExamCompleted, GetAll
+│   │   │   ├── FoodItems/                    ← GetFoodItems, AnalyzeFoodPhoto (Gemini)
+│   │   │   └── DependencyInjection.cs
 │   │   │
 │   │   ├── PointsTableAndExams.Infrastructure/
-│   │   │   ├── Data/
-│   │   │   │   ├── AppDbContext.cs            ← Despacha Domain Events no CommitAsync
-│   │   │   │   ├── Configurations/            ← IEntityTypeConfiguration<T> (Fluent API)
-│   │   │   │   │   ├── UserConfiguration.cs
-│   │   │   │   │   ├── FoodItemConfiguration.cs
-│   │   │   │   │   ├── DailyLogConfiguration.cs
-│   │   │   │   │   └── ExamRequestConfiguration.cs
-│   │   │   │   └── Repositories/
-│   │   │   │       ├── BaseRepository.cs      ← AsNoTracking por padrão
-│   │   │   │       ├── UserRepository.cs
-│   │   │   │       ├── DailyLogRepository.cs  ← AsSplitQuery para includes
-│   │   │   │       └── ExamRequestRepository.cs
-│   │   │   ├── Services/
-│   │   │   │   ├── PasswordHasher.cs          ← BCrypt workFactor 12
-│   │   │   │   ├── JwtTokenService.cs         ← HS256, claims padrão
-│   │   │   │   └── CurrentUserService.cs      ← IHttpContextAccessor
-│   │   │   └── DependencyInjection.cs         ← AddInfrastructure()
+│   │   │   ├── Data/                         ← AppDbContext, Configurations, Repositories
+│   │   │   ├── Services/                     ← PasswordHasher, JwtTokenService, GeminiVisionService
+│   │   │   └── DependencyInjection.cs
 │   │   │
 │   │   └── PointsTableAndExams.Api/
 │   │       ├── Controllers/
 │   │       │   ├── BaseApiController.cs       ← FromResult<T> helper
-│   │       │   ├── AuthController.cs          ← POST /register, POST /login
-│   │       │   ├── UsersController.cs         ← GET /users/{id}
-│   │       │   ├── DailyLogsController.cs     ← CRUD logs diários
-│   │       │   └── ExamRequestsController.cs  ← CRUD solicitações de exames
+│   │       │   ├── AuthController.cs          ← POST /api/auth/register, POST /api/auth/login
+│   │       │   ├── UsersController.cs         ← GET /api/users/{id}
+│   │       │   ├── DailyLogsController.cs     ← CRUD /api/daily-logs
+│   │       │   ├── FoodItemsController.cs     ← GET /api/food-items, POST /api/food-items/analyze-photo
+│   │       │   ├── ExamCategoriesController.cs← GET /api/exam-categories
+│   │       │   ├── ExamsController.cs         ← GET /api/exams
+│   │       │   └── ExamRequestsController.cs  ← CRUD /api/exam-requests
 │   │       ├── Middlewares/
 │   │       │   └── ExceptionHandlingMiddleware.cs
 │   │       ├── Program.cs
 │   │       └── appsettings.json
 │   │
 │   └── tests/
-│       ├── PointsTableAndExams.UnitTests/
-│       │   ├── Domain/Entities/               ← UserTests, DailyLogTests
-│       │   ├── Domain/ValueObjects/           ← EmailTests, PointsTests
-│       │   ├── Application/Users/             ← CreateUserCommandHandlerTests
-│       │   ├── Application/DailyLogs/         ← CreateDailyLogCommandHandlerTests
-│       │   └── Architecture/
-│       │       └── ArchitectureTests.cs       ← NetArchTest (limites de camada)
-│       │
-│       ├── PointsTableAndExams.IntegrationTests/
-│       │   ├── Common/
-│       │   │   ├── IntegrationTestWebAppFactory.cs  ← Testcontainers SQL Server
-│       │   │   └── BaseIntegrationTest.cs
-│       │   └── Controllers/
-│       │       └── AuthControllerTests.cs
-│       │
-│       ├── PointsTableAndExams.BddTests/
-│       │   ├── Features/
-│       │   │   ├── UserRegistration.feature   ← Cenários em Gherkin
-│       │   │   └── DailyLog.feature
-│       │   ├── StepDefinitions/
-│       │   │   ├── UserRegistrationSteps.cs
-│       │   │   └── DailyLogSteps.cs
-│       │   └── reqnroll.json
-│       │
-│       └── PointsTableAndExams.E2ETests/
-│           ├── Support/
-│           │   └── PlaywrightFixture.cs       ← IAsyncLifetime, IBrowser
-│           └── Tests/
-│               └── AuthE2ETests.cs            ← Register → Login → Endpoint protegido
+│       ├── PointsTableAndExams.UnitTests/     ← xUnit, NSubstitute, NetArchTest
+│       ├── PointsTableAndExams.IntegrationTests/ ← Testcontainers SQL Server
+│       ├── PointsTableAndExams.BddTests/      ← Reqnroll / Gherkin
+│       └── PointsTableAndExams.E2ETests/      ← Playwright (.NET)
 │
-└── README.md                                  ← Este arquivo
+├── 4-E2E/                                    ← Testes E2E Playwright TypeScript
+│   ├── playwright.config.ts                  ← 2 projects: chromium + non-functional
+│   ├── global-setup.ts                       ← Warmup do backend (cold-start Azure)
+│   ├── fixtures/
+│   │   └── auth.fixture.ts                   ← authenticatedPage fixture (login automático)
+│   ├── pages/                                ← Page Object Models
+│   │   ├── LoginPage.ts
+│   │   ├── RegisterPage.ts
+│   │   └── FoodLogPage.ts
+│   └── tests/
+│       ├── functional/
+│       │   ├── auth/
+│       │   │   ├── login.spec.ts             ← 10 testes
+│       │   │   ├── logout.spec.ts            ← 2 testes
+│       │   │   └── register.spec.ts          ← 12 testes
+│       │   ├── dashboard/
+│       │   │   └── dashboard.spec.ts         ← 11 testes
+│       │   ├── exams/
+│       │   │   └── exams.spec.ts             ← 7 testes
+│       │   ├── food-log/
+│       │   │   ├── create-entry.spec.ts      ← 6 testes
+│       │   │   ├── history.spec.ts           ← 5 testes
+│       │   │   ├── add-item-flow.spec.ts     ← 13 testes (incl. Gallery mode)
+│       │   │   └── photo-analysis.spec.ts    ← 3 testes
+│       │   └── navigation/
+│       │       ├── authenticated-nav.spec.ts ← 14 testes (incl. branding VitaLog)
+│       │       └── protected-routes.spec.ts  ← 7 testes
+│       └── non-functional/
+│           ├── accessibility/
+│           │   └── a11y.spec.ts              ← 6 testes (WCAG 2.1 AA + axe-core)
+│           └── performance/
+│               └── page-load.spec.ts         ← 5 testes (FCP, LCP, DCL, erros JS)
+│
+├── .github/workflows/
+│   ├── backend.yml                           ← CI/CD backend → Azure App Service
+│   ├── frontend.yml                          ← Build → Azure Static Web Apps → E2E gate
+│   └── e2e.yml                               ← Run manual full cross-browser E2E
+│
+└── README.md                                 ← Este arquivo
 ```
 
 ---
@@ -469,18 +451,31 @@ POST /api/daily-logs                         → Cria log do dia
 POST /api/daily-logs/{logId}/items           → Adiciona alimento ao log
 ```
 
+### Alimentos
+```
+GET  /api/food-items?search=...              → Busca alimentos por nome
+POST /api/food-items/analyze-photo           → Analisa foto via Gemini Vision (multipart/form-data)
+```
+
 ### Solicitações de Exames (protegido)
 ```
-GET   /api/exam-requests/{id}                        → Busca solicitação
-POST  /api/exam-requests                             → Cria solicitação com exames
-PATCH /api/exam-requests/{requestId}/items/{itemId}/complete  → Marca exame como realizado
+GET   /api/exam-requests?userId=...                          → Lista solicitações do usuário
+GET   /api/exam-requests/{id}                               → Busca solicitação por ID
+POST  /api/exam-requests                                    → Cria solicitação com exames
+PATCH /api/exam-requests/{requestId}/items/{itemId}/complete → Marca exame como realizado
+```
+
+### Catálogo de Exames
+```
+GET  /api/exam-categories   → Lista categorias de exames
+GET  /api/exams             → Lista todos os exames disponíveis
 ```
 
 ---
 
 ## Frontend
 
-O frontend é uma **SPA React** que consome a API REST via JWT, construída com **Feature-Based Clean Architecture** — o equivalente visual do Clean Architecture do backend, organizado em fatias verticais por funcionalidade em vez de camadas horizontais.
+O frontend é uma **SPA React** que consome a API REST via JWT, construída com **Feature-Based Clean Architecture** — organizado em fatias verticais por funcionalidade.
 
 ### Arquitetura Frontend
 
@@ -493,17 +488,21 @@ O frontend é uma **SPA React** que consome a API REST via JWT, construída com 
 │                    features/                         │  ← Fatias verticais por domínio
 │   ┌──────────┬─────────────┬───────────┬──────────┐  │
 │   │   auth   │  dashboard  │ food-log  │  exams   │  │
-│   │  api/    │   api/      │   api/    │   api/   │  │
-│   │  hooks/  │   hooks/    │   hooks/  │   hooks/ │  │
-│   │  pages/  │   pages/    │   pages/  │   pages/ │  │
+│   │  api/    │   hooks/    │   api/    │   api/   │  │
+│   │  hooks/  │   pages/    │   hooks/  │   hooks/ │  │
+│   │  pages/  │             │   pages/  │   pages/ │  │
 │   │  types/  │             │   types/  │   types/ │  │
 │   └──────────┴─────────────┴───────────┴──────────┘  │
 ├──────────────────────────────────────────────────────┤
-│                    shared/                           │  ← Spinner, ErrorBoundary, hooks globais
+│                    shared/                           │  ← Spinner, ErrorBoundary
 └──────────────────────────────────────────────────────┘
 ```
 
 **Regra de dependência:** `features/` importa de `design-system/`, `core/` e `shared/`. Nunca entre features.
+
+### Branding — VitaLog
+
+O logotipo **Vita**`Log` usa tipografia `--font-display` peso 700 com a palavra *Log* em verde esmeralda `#34d399` para reforçar o contexto de saúde. O mesmo estilo aparece na nav global (44px preta) e na página de login.
 
 ### Design System — Estilo Apple
 
@@ -522,98 +521,26 @@ O design system implementa fielmente o sistema visual da Apple: token único de 
 | `--radius-lg` | `18px` | Cards utilitários |
 | `--shadow-product` | `rgba(0,0,0,0.22) 3px 5px 30px` | Apenas em renders de produto |
 
-**Escala tipográfica:**
+### Funcionalidades por Feature
 
-| Token CSS | Tamanho | Peso | Uso |
-|---|---|---|---|
-| `--text-hero-display` | 56px | 600 | Hero headline com tracking −0.28px |
-| `--text-display-lg` | 40px | 600 | Título de tile de produto |
-| `--text-display-md` | 34px | 600 | Cabeçalho de seção |
-| `--text-lead` | 28px | 400 | Subcopy de tile |
-| `--text-tagline` | 21px | 600 | Sub-nav, eyebrow |
-| `--text-body` | 17px | 400 | Parágrafo — 17px, não 16px |
-| `--text-caption` | 14px | 400 | Labels, botões utilitários |
-| `--text-nav-link` | 12px | 400 | Links da nav global |
+#### Dashboard
+Painel principal com dados reais carregados via React Query:
+- **Today's Points** — total de pontos do dia (máx. 300 pts) com barra de progresso
+- **Food items today** — quantidade de itens registrados no dia
+- **Pending exams** — exames solicitados ainda não realizados
+- Quick actions: atalhos para Food Log, Exams e History
 
-### Componentes do Design System
-
-| Componente | Variantes | Descrição |
+#### Food Log — 3 modos de entrada
+| Modo | Ícone | Comportamento |
 |---|---|---|
-| `Button` | `primary`, `secondary`, `dark`, `hero`, `pearl`, `icon` | Todos com `transform: scale(0.95)` no active |
-| `GlobalNav` | — | Barra preta 44px, sticky, colapsa em mobile |
-| `SubNav` | — | Frosted glass 52px abaixo da nav global |
-| `ProductTile` | `light`, `parchment`, `dark`, `dark2`, `dark3` | Tiles full-bleed sem border-radius |
-| `StoreCard` | — | Cards com border `hairline` + `radius-lg` |
-| `Input` | `pill`, `rect` | Input com label acessível + estado de erro |
-| `Footer` | — | Colunas de links com `line-height: 2.41` |
+| **Select** | 📋 | Busca por nome + dropdown + quantidade + horário da refeição |
+| **Camera** | 📷 | Abre câmera do dispositivo → Gemini analisa → confirma e registra |
+| **Gallery** | 🖼️ | Abre seletor de arquivos do dispositivo → mesmo fluxo de análise da câmera |
 
-### Estrutura de Pastas Frontend
+O fluxo de análise por IA (Camera e Gallery) usa `POST /api/food-items/analyze-photo` com Gemini Vision: identifica o alimento, estima porção em gramas, calcula calorias e pontos, e pode criar automaticamente novos itens no catálogo quando não encontrado.
 
-```
-2-FrontEnd/
-├── .env.example                          ← Copiar para .env.local
-├── vite.config.ts                        ← Proxy /api → backend :7001
-├── tsconfig.app.json                     ← strict: true, zero any
-└── src/
-    ├── main.tsx                          ← Monta tokens.css + global.css + App
-    ├── App.tsx                           ← QueryClientProvider + AppRouter
-    │
-    ├── design-system/
-    │   ├── tokens.css                    ← Todas as variáveis CSS (cores, tipo, espaço, raio)
-    │   ├── global.css                    ← Reset + base body
-    │   ├── tokens.ts                     ← Mirror TypeScript dos tokens
-    │   ├── index.ts                      ← Barrel export
-    │   └── components/
-    │       ├── Button/                   ← Button.tsx + Button.module.css
-    │       ├── Nav/                      ← GlobalNav + SubNav
-    │       ├── ProductTile/              ← ProductTile.tsx + module.css
-    │       ├── Card/                     ← StoreCard.tsx + module.css
-    │       ├── Input/                    ← Input.tsx + module.css
-    │       └── Footer/                  ← Footer.tsx + module.css
-    │
-    ├── core/
-    │   ├── api/
-    │   │   └── client.ts                ← Axios + interceptor Bearer + logout no 401
-    │   ├── auth/
-    │   │   ├── authStore.ts             ← Zustand com persist (localStorage)
-    │   │   └── ProtectedRoute.tsx       ← Redireciona para /login se não autenticado
-    │   ├── router/
-    │   │   └── AppRouter.tsx            ← Layout routes + lazy() em todas as pages
-    │   └── queryClient.ts              ← TanStack Query — staleTime 2min, retry 1
-    │
-    ├── features/
-    │   ├── auth/
-    │   │   ├── types/auth.types.ts      ← LoginRequest, RegisterRequest, AuthResponse
-    │   │   ├── api/authApi.ts           ← POST /auth/login, POST /auth/register
-    │   │   ├── hooks/useLogin.ts        ← useMutation → setAuth → redirect
-    │   │   ├── hooks/useRegister.ts     ← useMutation → setAuth → /dashboard
-    │   │   ├── pages/LoginPage.tsx      ← Card centralizado, RHF + Zod
-    │   │   └── pages/RegisterPage.tsx   ← Formulário completo com seleção de gênero
-    │   │
-    │   ├── dashboard/
-    │   │   ├── api/dashboardApi.ts      ← GET /users/me/summary
-    │   │   ├── hooks/useDashboard.ts    ← useQuery com queryKey
-    │   │   └── pages/DashboardPage.tsx  ← Hero escuro + stats cards + quick actions
-    │   │
-    │   ├── food-log/
-    │   │   ├── types/foodLog.types.ts   ← DailyLog, DailyLogItem, FoodItem, etc.
-    │   │   ├── api/foodLogApi.ts        ← GET today, POST item, DELETE item, history
-    │   │   ├── hooks/useFoodLog.ts      ← useTodayLog, useAddLogItem, useRemoveLogItem
-    │   │   ├── pages/FoodLogPage.tsx    ← Painel de adição + lista de itens do dia
-    │   │   └── pages/FoodLogHistoryPage.tsx ← Histórico de pontos por dia
-    │   │
-    │   └── exams/
-    │       ├── types/exams.types.ts     ← ExamRequest, ExamRequestItem, Exam, etc.
-    │       ├── api/examsApi.ts          ← GET requests, POST request, PATCH item
-    │       ├── hooks/useExams.ts        ← useMyExamRequests, useCreateExamRequest, etc.
-    │       ├── pages/ExamsPage.tsx      ← Lista de solicitações + marcar como feito
-    │       └── pages/ExamRequestPage.tsx ← Seleção de exames por categoria + criar request
-    │
-    └── shared/
-        └── components/
-            ├── Spinner.tsx              ← Spinner acessível com role="status"
-            └── Spinner.module.css
-```
+#### Exams
+Gerenciamento de solicitações de exames organizadas por categoria clínica, com marcação de conclusão e registro de resultado e laboratório.
 
 ### Fluxo de Autenticação Frontend
 
@@ -664,34 +591,233 @@ Toda requisição Axios
 
 ## Testes
 
-### Executar Testes Unitários
+### Resumo
+
+| Suite | Tipo | Testes | Status |
+|---|---|---|---|
+| `4-E2E` functional | E2E Playwright TypeScript | **89** | ✅ todos passando |
+| `4-E2E` non-functional | Acessibilidade + Performance | **11** | ✅ todos passando |
+| `UnitTests` | xUnit + NSubstitute | 31 | ✅ |
+| `IntegrationTests` | Testcontainers SQL Server | — | ✅ |
+| `BddTests` | Reqnroll / Gherkin | — | ✅ |
+
+### Testes Funcionais E2E — 89 testes
+
+#### Auth — Login (10 testes)
+- Logs in with valid email and redirects to app
+- Logs in with username and redirects to app
+- Shows error for wrong password
+- Shows error for non-existent user
+- Shows Zod error when fields are empty
+- Has link to create account (register)
+- Password field is masked
+- Login page shows VitaLog logo
+- Login page shows tagline "Your health. Tracked."
+- Page title is VitaLog
+
+#### Auth — Logout (2 testes)
+- Logs out and redirects to login page
+- Cannot access protected route after logout
+
+#### Auth — Register (12 testes)
+- Registers a new user successfully and redirects
+- Shows error when full name is too short
+- Shows error for invalid email
+- Shows error when username has uppercase letters
+- Shows error when username has special characters
+- Shows error when password has no uppercase letter
+- Shows error when password has no digit
+- Shows error when password is too short
+- Shows error when gender is not selected
+- Shows error when phone number is too short
+- Shows error when username is too short
+- Shows error when birth date is missing
+- Shows error when email is already registered
+
+#### Dashboard (11 testes)
+- Shows "Your Health Dashboard" heading
+- Shows personalised greeting with user first name
+- Shows tagline about tracking food and exams
+- Shows "Today's Points" stat card
+- Shows "Food items today" stat card
+- Shows "Pending exams" stat card
+- Shows "What would you like to do?" section
+- "Open Food Log" card is visible
+- "Open Food Log" navigates to /food-log
+- "Go to Exams" navigates to /exams
+- "View History" navigates to /food-log/history
+
+#### Exams (7 testes)
+- Loads with "Exam Requests" heading
+- Shows pending count or "All exams completed" subtitle
+- Shows "My requests" section heading
+- Shows "+ New request" button
+- "+ New request" button navigates to /exams/requests
+- SubNav "New request" link navigates to /exams/requests
+- SubNav "My requests" link is active on /exams
+
+#### Food Log — Page access & UI (6 testes)
+- Food log page loads after login and shows today's log
+- Shows today's items header
+- Select mode is active by default
+- Shows Add item button in select mode
+- Shows error when submitting without selecting a food item
+- Shows points badge when today's log is loaded
+
+#### Food Log — History (5 testes)
+- Loads with "Points History" heading
+- Shows subtitle about daily point consumption
+- Shows history list or "No history yet" empty state
+- SubNav "Today" link navigates back to /food-log
+- SubNav "History" link is active (stays on /food-log/history)
+
+#### Food Log — Add item flow (13 testes)
+- Search input is visible in select mode
+- Typing in search input updates dropdown options
+- Quantity below minimum (0) shows validation error
+- Quantity above maximum (21) shows validation error
+- Selects a food item and adds it to the log
+- Switching from select to camera mode hides the food select
+- Switching back to select mode shows the food select again
+- "Gallery" tab button is visible on food log page
+- Switching to Gallery mode hides the food select
+- Gallery mode shows device file picker hint text
+- Switching from Gallery back to Select shows the food select
+- Gallery mode: uploading a photo triggers analysis
+- Meal time dropdown has multiple options
+
+#### Food Log — Photo mode / Camera (3 testes)
+- 📷 Camera button is visible on food log page
+- Switching to photo mode shows upload area
+- Uploading a photo triggers analysis and shows result or loading state
+
+#### Navigation — Authenticated (14 testes)
+- Global nav is visible after login
+- "Sign Out" button is visible in nav
+- User name span is present in the nav
+- "Dashboard" nav link is visible
+- "Food Log" nav link is visible
+- "Exams" nav link is visible
+- "Dashboard" nav link navigates to /dashboard
+- "Food Log" nav link navigates to /food-log
+- "Exams" nav link navigates to /exams
+- VitaLog logo link is visible in nav
+- VitaLog logo navigates to root (dashboard)
+- Page title is VitaLog
+
+#### Navigation — Protected Routes (7 testes)
+- Redirects /food-log to /login when not authenticated
+- Redirects /dashboard to /login when not authenticated
+- Redirects /exams to /login when not authenticated
+- Redirects /food-log/history to /login when not authenticated
+- Home / redirects unauthenticated user to login
+- /login page loads and shows the form
+- /register page loads and shows the form
+
+### Testes Não Funcionais — 11 testes
+
+#### Acessibilidade WCAG 2.1 AA — axe-core (6 testes)
+- Login page has no critical a11y violations
+- Register page has no critical a11y violations
+- Login form fields have accessible labels
+- Register form fields have accessible labels
+- Login page is keyboard navigable
+- Color contrast — page has sufficient contrast
+
+#### Performance — Core Web Vitals (5 testes)
+- Login page: FCP < 1800ms and LCP < 2500ms
+- Register page: FCP < 1800ms
+- domContentLoaded < 3000ms on public pages
+- No unhandled JS errors on login page
+- No unhandled JS errors on register page
+
+### Executar Testes E2E (Playwright TypeScript)
+
 ```bash
+cd 4-E2E
+npm install
+npx playwright install chromium
+
+# Testes funcionais (89 testes)
+npx playwright test tests/functional --project=chromium
+
+# Testes não funcionais (11 testes)
+npx playwright test tests/non-functional --project=non-functional
+
+# Todos com relatório HTML
+npx playwright test --reporter=list,html
+npx playwright show-report
+```
+
+Variáveis de ambiente (arquivo `4-E2E/.env`):
+```env
+BASE_URL=https://vitalog.app.br
+TEST_USER_EMAIL=emailusuario@teste.com
+TEST_USER_PASSWORD=Password123
+TEST_USER_USERNAME=emailusuarioteste
+```
+
+### Executar Testes Backend (.NET)
+
+```bash
+cd 3-BackEnd
+
+# Unitários (31 testes, sem dependências externas)
 dotnet test tests/PointsTableAndExams.UnitTests
-# 31 testes — sem dependências externas
-```
 
-### Executar Testes de Integração
-> Requer Docker instalado (Testcontainers sobe SQL Server automaticamente)
-```bash
+# Integração (requer Docker — Testcontainers sobe SQL Server)
 dotnet test tests/PointsTableAndExams.IntegrationTests
-```
 
-### Executar Testes BDD (Reqnroll)
-```bash
+# BDD / Gherkin
 dotnet test tests/PointsTableAndExams.BddTests
-```
 
-### Executar Testes E2E (Playwright)
-> Requer a API em execução na porta 7001
-```bash
-dotnet run --project src/PointsTableAndExams.Api
-dotnet test tests/PointsTableAndExams.E2ETests
-```
-
-### Executar Todos
-```bash
+# Todos
 dotnet test PointsTableAndExams.sln
 ```
+
+---
+
+## Deploy e CI/CD
+
+### Infraestrutura Azure
+
+| Componente | Serviço Azure | URL |
+|---|---|---|
+| **Frontend** | Azure Static Web Apps | [vitalog.app.br](https://vitalog.app.br) |
+| **Backend API** | Azure App Service (.NET 9) | API interna |
+| **Banco de dados** | Azure SQL Database | SQL Server 2019+ |
+
+### GitHub Actions
+
+#### `backend.yml` — Deploy Backend
+Disparado em push na `main` (mudanças em `3-BackEnd/`):
+1. Build + testes unitários
+2. Publish `PointsTableAndExams.Api`
+3. Deploy para Azure App Service via publish profile
+
+#### `frontend.yml` — Deploy Frontend + Gate E2E
+Disparado em push na `main` (mudanças em `2-FrontEnd/` ou `4-E2E/`):
+1. `npm ci` + `npm run build`
+2. Deploy para Azure Static Web Apps
+3. Warmup do backend (aguarda cold-start)
+4. Executa 89 testes funcionais Playwright (chromium)
+5. Upload do relatório HTML como artefato
+
+#### `e2e.yml` — Full E2E Manual
+Disparo manual via `workflow_dispatch`:
+- Executa todos os 100 testes (functional + non-functional)
+- Projetos: chromium, firefox, webkit
+- Upload do relatório consolidado
+
+### Secrets necessários (GitHub → Settings → Secrets → Actions)
+
+| Secret | Descrição |
+|---|---|
+| `AZURE_STATIC_WEB_APPS_API_TOKEN` | Token de deploy do Azure Static Web Apps |
+| `AZURE_WEBAPP_PUBLISH_PROFILE` | Publish profile do Azure App Service |
+| `TEST_USER_EMAIL` | Email do usuário de teste E2E |
+| `TEST_USER_PASSWORD` | Senha do usuário de teste E2E |
+| `TEST_USER_USERNAME` | Username do usuário de teste E2E |
 
 ---
 
@@ -732,6 +858,9 @@ Execute os scripts na ordem em `1-Sql/`:
     "Issuer": "PointsTableAndExams.Api",
     "Audience": "PointsTableAndExams.Client",
     "ExpirationHours": "8"
+  },
+  "GeminiSettings": {
+    "ApiKey": "SUA_GEMINI_API_KEY"
   }
 }
 ```
@@ -781,12 +910,6 @@ npm run build
 # Artefatos em: 2-FrontEnd/dist/
 ```
 
-#### 5. Preview do build
-```bash
-npm run preview
-# Preview em: http://localhost:4173
-```
-
 ---
 
 ### Usuários de exemplo (após executar `04_DML_Sample_Users.sql`)
@@ -797,7 +920,7 @@ npm run preview
 | `carlos.lima` | `password` | Carlos Henrique Lima |
 | `fernanda.c` | `password` | Fernanda Costa |
 
-> **Nota:** Os hashes no seed são ilustrativos (SHA-256 da string `"password"`). Em produção, gere hashes reais com BCrypt antes de inserir.
+> **Nota:** Os hashes no seed são ilustrativos. Em produção, gere hashes reais com BCrypt antes de inserir.
 
 ---
 
@@ -816,6 +939,8 @@ npm run preview
 | **Domain Events via MediatR** | Desacopla efeitos colaterais (ex: notificações) dos agregados |
 | **Reqnroll** para BDD | SpecFlow successor oficial com suporte nativo ao .NET 9 |
 | **Testcontainers** para integração | Banco real em Docker, sem mocks frágeis de infra |
+| **Gemini Vision como ACL** | Anti-Corruption Layer — o domínio não conhece detalhes da API do Google |
+| **Rotas kebab-case explícitas** | `[Route("api/exam-requests")]` — evita divergência entre nome da classe e URL esperada pelo frontend |
 
 ### Frontend
 
@@ -828,10 +953,23 @@ npm run preview
 | **React Router v7 com lazy()** | Code splitting automático por página, bundle inicial mínimo, layout routes evitam duplicação de UI |
 | **Axios com interceptors** | Injeção de Bearer token centralizada, logout automático no 401 sem lógica espalhada pelos hooks |
 | **React Hook Form + Zod** | Formulários uncontrolled (sem re-render por keystroke), validação com inferência de tipos end-to-end |
-| **Design System próprio (Apple-style)** | Tokens CSS como fonte única de verdade, componentes agnósticos de negócio, sistema de design escalável e documentado |
+| **Design System próprio (Apple-style)** | Tokens CSS como fonte única de verdade, componentes agnósticos de negócio |
 | **Vite como build tool** | HMR nativo em ESM, build com esbuild (10-100× mais rápido que webpack), proxy de API integrado |
 | **TypeScript strict sem `any`** | Segurança de tipos do contrato da API até a UI, erros capturados em tempo de compilação |
+| **Hooks reutilizados no Dashboard** | `useTodayLog()` e `useMyExamRequests()` compartilham cache com Food Log e Exams — zero chamadas de API duplicadas |
+
+### Testes E2E
+
+| Decisão | Justificativa |
+|---|---|
+| **Page Object Model** | Encapsulamento de seletores e ações — testes legíveis e fáceis de manter |
+| **`authenticatedPage` fixture** | Login automático antes de cada teste autenticado — sem repetição de código |
+| **Scope nav assertions** | Sempre escopar ao `nav[aria-label="Global navigation"]` — footer repete os links e causa strict-mode violations |
+| **`toBeAttached()` para spans vazios** | Spans de 0×0 px são "hidden" no Playwright — `toBeAttached()` verifica presença no DOM |
+| **`\|\|` em vez de `??` para env vars** | GitHub Secrets não definidos viram `''` (string vazia), não `undefined` — `\|\|` faz fallback para ambos |
+| **Global setup de warmup** | Azure App Service entra em cold-start — warmup automático antes da suite evita timeouts falsos |
+| **Projeto `non-functional` separado** | Testes de performance e a11y têm configurações diferentes (sem autenticação, timeouts maiores) |
 
 ---
 
-*Projeto fullstack desenvolvido com foco em qualidade de código, testabilidade e aderência às melhores práticas dos ecossistemas .NET e React.*
+*Projeto fullstack desenvolvido com foco em qualidade de código, testabilidade e aderência às melhores práticas dos ecossistemas .NET e React. Publicado em produção em [vitalog.app.br](https://vitalog.app.br).*
