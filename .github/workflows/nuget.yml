@@ -25,18 +25,15 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Restore
-        run: dotnet restore 3-BackEnd/PointsTableAndExams.sln
-
       - name: Pack VitaLog.Domain
         run: |
           dotnet pack 3-BackEnd/src/PointsTableAndExams.Domain/PointsTableAndExams.Domain.csproj \
-            -c Release --no-restore -o ./nupkg
+            -c Release -o ./nupkg
 
       - name: Pack VitaLog.Application
         run: |
           dotnet pack 3-BackEnd/src/PointsTableAndExams.Application/PointsTableAndExams.Application.csproj \
-            -c Release --no-restore -o ./nupkg
+            -c Release -o ./nupkg
 
       - name: Push packages to GitHub Packages
         run: |
