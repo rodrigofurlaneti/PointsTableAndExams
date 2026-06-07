@@ -14,7 +14,7 @@ public sealed class GeminiHttpClientOptions
 
     public string BaseUrl { get; init; } = "https://generativelanguage.googleapis.com";
     public string ApiVersion { get; init; } = "v1beta";
-    public string Model { get; init; } = "gemini-2.0-flash";
+    public string Model { get; init; } = "gemini-2.5-flash";
 
     public string GenerateContentUrl =>
         $"{BaseUrl}/{ApiVersion}/models/{Model}:generateContent";
