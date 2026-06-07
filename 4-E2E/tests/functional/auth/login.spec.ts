@@ -3,6 +3,7 @@ import { LoginPage } from '../../../pages/LoginPage';
 
 const EMAIL    = process.env.TEST_USER_EMAIL    ?? 'emailusuario@teste.com';
 const PASSWORD = process.env.TEST_USER_PASSWORD ?? 'Password123';
+const USERNAME = process.env.TEST_USER_USERNAME ?? 'emailusuarioteste';
 
 test.describe('Login — functional', () => {
   let loginPage: LoginPage;
@@ -19,9 +20,7 @@ test.describe('Login — functional', () => {
   });
 
   test('logs in with username and redirects to app', async () => {
-    // username = local part of email for our test user
-    const username = 'emailusuarioteste';
-    await loginPage.login(username, PASSWORD);
+    await loginPage.login(USERNAME, PASSWORD);
     await loginPage.expectRedirectedToDashboard();
   });
 

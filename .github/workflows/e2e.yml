@@ -39,9 +39,10 @@ jobs:
       - name: Run functional tests
         working-directory: 4-E2E
         env:
-          BASE_URL:           ${{ inputs.base_url || secrets.E2E_BASE_URL }}
-          TEST_USER_EMAIL:    ${{ secrets.E2E_TEST_USER_EMAIL }}
-          TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+          BASE_URL:            ${{ inputs.base_url || secrets.E2E_BASE_URL }}
+          TEST_USER_EMAIL:     ${{ secrets.E2E_TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD:  ${{ secrets.E2E_TEST_USER_PASSWORD }}
+          TEST_USER_USERNAME:  ${{ secrets.E2E_TEST_USER_USERNAME }}
         run: npx playwright test tests/functional --reporter=list,html
 
       - name: Run non-functional tests
@@ -62,6 +63,4 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-cross-browser
-          path: 4-E2E/test-results/
-          retention-days: 7
+          name: test-results-cross-

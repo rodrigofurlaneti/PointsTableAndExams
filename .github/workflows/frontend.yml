@@ -111,9 +111,10 @@ jobs:
         working-directory: 4-E2E
         env:
           # Falls back to the secret if Azure SWA does not output the URL
-          BASE_URL:           ${{ needs.deploy.outputs.url || secrets.E2E_BASE_URL }}
-          TEST_USER_EMAIL:    ${{ secrets.E2E_TEST_USER_EMAIL }}
-          TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+          BASE_URL:            ${{ needs.deploy.outputs.url || secrets.E2E_BASE_URL }}
+          TEST_USER_EMAIL:     ${{ secrets.E2E_TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD:  ${{ secrets.E2E_TEST_USER_PASSWORD }}
+          TEST_USER_USERNAME:  ${{ secrets.E2E_TEST_USER_USERNAME }}
         run: npx playwright test tests/functional --project=chromium --reporter=list,html
 
       - name: Run non-functional tests
@@ -134,6 +135,4 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ github.run_number }}
-          path: 4-E2E/test-results/
-          retention-days: 7
+          name: test-results-${{ github.run_nu
