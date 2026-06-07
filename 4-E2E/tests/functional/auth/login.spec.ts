@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../../pages/LoginPage';
 
-const EMAIL    = process.env.TEST_USER_EMAIL    ?? 'emailusuario@teste.com';
-const PASSWORD = process.env.TEST_USER_PASSWORD ?? 'Password123';
-const USERNAME = process.env.TEST_USER_USERNAME ?? 'emailusuarioteste';
+// Use || (not ??) so that an empty-string secret from CI also falls back to the default
+const EMAIL    = process.env.TEST_USER_EMAIL    || 'emailusuario@teste.com';
+const PASSWORD = process.env.TEST_USER_PASSWORD || 'Password123';
+const USERNAME = process.env.TEST_USER_USERNAME || 'emailusuarioteste';
 
 test.describe('Login — functional', () => {
   let loginPage: LoginPage;

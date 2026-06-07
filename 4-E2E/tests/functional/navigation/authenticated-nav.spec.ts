@@ -1,8 +1,8 @@
 import { test, expect } from '../../../fixtures/auth.fixture';
 
 test.describe('Navigation — authenticated', () => {
-  // Scope all nav queries to the global nav to avoid strict-mode violations
-  // caused by the footer repeating the same links.
+  // All nav queries are scoped to nav[aria-label="Global navigation"] to avoid
+  // strict-mode violations caused by the footer repeating the same links.
 
   // ── Global nav presence ──────────────────────────────────────────
   test('global nav is visible after login', async ({ authenticatedPage: page }) => {
@@ -14,11 +14,11 @@ test.describe('Navigation — authenticated', () => {
     await expect(nav.getByRole('button', { name: /sign out/i })).toBeVisible();
   });
 
-  test('user first name span is rendered in the nav bar', async ({ authenticatedPage: page }) => {
-    // GlobalNav renders user?.fullName?.split(' ')[0] in the only <span> inside the nav.
-    // Visibility check — actual text depends on the test account's profile data.
+  test('user name span is present in the nav (shows first name when profile has fullName)', async ({ authenticatedPage: page }) => {
+    // GlobalNav renders user?.fullName?.split(' ')[0] in a <span style="color:rgba(255,255,255,0.6)">
+    // An empty span has 0×0 px → toBeAttached() checks DOM presence without requiring visibility.
     const nav = page.locator('nav[aria-label="Global navigation"]');
-    await expect(nav.locator('span').first()).toBeVisible();
+    await expect(nav.locator('span[style*="rgba"]')).toBeAttached();
   });
 
   // ── Nav links ────────────────────────────────────────────────────
