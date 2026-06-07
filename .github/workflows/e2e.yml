@@ -63,4 +63,6 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-cross-
+          name: test-results-cross-browser
+          path: 4-E2E/test-results/
+          retention-days: 7

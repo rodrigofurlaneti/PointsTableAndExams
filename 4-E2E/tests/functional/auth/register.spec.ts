@@ -86,6 +86,27 @@ test.describe('Register — functional', () => {
     await expect(page.locator('select + p, select ~ p').first()).toBeVisible();
   });
 
+  test('shows error when phone number is too short', async ({ page }) => {
+    await registerPage.fill({ ...validUser(), phoneNumber: '1234' });
+    await registerPage.submit();
+    await expect(page.locator('#phone-number-error')).toBeVisible();
+    await expect(page.locator('#phone-number-error')).toContainText(/phone number is required/i);
+  });
+
+  test('shows error when username is too short', async ({ page }) => {
+    await registerPage.fill({ ...validUser(), username: 'ab' });
+    await registerPage.submit();
+    await expect(page.locator('#username-error')).toBeVisible();
+    await expect(page.locator('#username-error')).toContainText(/min 3/i);
+  });
+
+  test('shows error when birth date is missing', async ({ page }) => {
+    await registerPage.fill({ ...validUser(), birthDate: '' });
+    await registerPage.submit();
+    await expect(page.locator('#birth-date-error')).toBeVisible();
+    await expect(page.locator('#birth-date-error')).toContainText(/birth date is required/i);
+  });
+
   // ── API-level duplicate email ────────────────────────────────────
   test('shows error when email is already registered', async () => {
     const existing = {

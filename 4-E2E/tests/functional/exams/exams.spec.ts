@@ -1,0 +1,45 @@
+import { test, expect } from '../../../fixtures/auth.fixture';
+
+test.describe('Exams — functional', () => {
+  test.beforeEach(async ({ authenticatedPage: page }) => {
+    await page.goto('/exams', { waitUntil: 'networkidle' });
+    await page.waitForSelector('h1');
+  });
+
+  // ── Page load ────────────────────────────────────────────────────
+  test('loads with "Exam Requests" heading', async ({ authenticatedPage: page }) => {
+    await expect(page.getByRole('heading', { name: /exam requests/i })).toBeVisible();
+  });
+
+  test('shows pending count or "All exams completed" subtitle', async ({ authenticatedPage: page }) => {
+    await page.waitForTimeout(2000);
+    const subtitle = page.getByText(/pending exam|all exams completed/i);
+    await expect(subtitle).toBeVisible();
+  });
+
+  test('shows "My requests" section heading', async ({ authenticatedPage: page }) => {
+    await expect(page.getByRole('heading', { name: /my requests/i })).toBeVisible();
+  });
+
+  // ── New request button ───────────────────────────────────────────
+  test('shows "+ New request" button', async ({ authenticatedPage: page }) => {
+    await expect(page.getByRole('button', { name: /new request/i })).toBeVisible();
+  });
+
+  test('"+ New request" button navigates to /exams/requests', async ({ authenticatedPage: page }) => {
+    await page.getByRole('button', { name: /new request/i }).click();
+    await expect(page).toHaveURL(/\/exams\/requests/);
+  });
+
+  // ── SubNav ───────────────────────────────────────────────────────
+  test('SubNav "New request" link navigates to /exams/requests', async ({ authenticatedPage: page }) => {
+    await page.getByRole('link', { name: /new request/i }).first().click();
+    await expect(page).toHaveURL(/\/exams\/requests/);
+  });
+
+  test('SubNav "My requests" link stays on /exams', async ({ authenticatedPage: page }) => {
+    await page.goto('/exams/requests', { waitUntil: 'networkidle' });
+    await page.getByRole('link', { name: /my requests/i }).click();
+    await expect(page).toHaveURL(/\/exams$/);
+  });
+});
