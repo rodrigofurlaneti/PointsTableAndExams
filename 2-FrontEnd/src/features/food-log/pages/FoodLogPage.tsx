@@ -17,7 +17,7 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
-type InputMode = 'select' | 'photo';
+type InputMode = 'select' | 'photo' | 'upload';
 
 const MEAL_TIMES = ['07:00', '10:00', '12:00', '15:00', '19:00', '21:00'];
 
@@ -38,6 +38,7 @@ export default function FoodLogPage() {
   const [analysis, setAnalysis] = useState<PhotoAnalysisResult | null>(null);
   const [photoMealTime, setPhotoMealTime] = useState('12:00');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
 
   const { data: log, isLoading: logLoading } = useTodayLog();
   const { data: foodItems = [] } = useFoodItems(search || undefined);
@@ -109,6 +110,7 @@ export default function FoodLogPage() {
     setAnalysis(null);
     setPhotoPreview(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+    if (uploadInputRef.current) uploadInputRef.current.value = '';
   };
 
   return (
@@ -145,9 +147,92 @@ export default function FoodLogPage() {
               className={`${styles.modeBtn} ${mode === 'photo' ? styles.modeBtnActive : ''}`}
               onClick={() => { setMode('photo'); resetPhoto(); }}
             >
-              📷 Photo
+              📷 Camera
+            </button>
+            <button
+              type="button"
+              className={`${styles.modeBtn} ${mode === 'upload' ? styles.modeBtnActive : ''}`}
+              onClick={() => { setMode('upload'); resetPhoto(); }}
+            >
+              🖼️ Gallery
             </button>
           </div>
+
+          {/* ── UPLOAD mode (gallery / device file picker) ── */}
+          {mode === 'upload' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+
+              {/* Pick area */}
+              <div className={styles.photoUploadArea} onClick={() => uploadInputRef.current?.click()}>
+                {photoPreview ? (
+                  <img src={photoPreview} alt="Food preview" className={styles.photoPreview} />
+                ) : (
+                  <>
+                    <span className={styles.photoIcon}>🖼️</span>
+                    <p className={styles.photoHint}>Tap to choose a photo from your device</p>
+                    <p className={styles.photoCaption}>jpg · png · webp</p>
+                  </>
+                )}
+              </div>
+
+              {/* Analyzing */}
+              {analyzing && (
+                <div className={styles.analysisCard}>
+                  <Spinner />
+                  <p style={{ color: 'var(--color-ink-muted-48)', fontSize: 'var(--text-caption)', textAlign: 'center', marginTop: 8 }}>
+                    Analyzing your photo…
+                  </p>
+                </div>
+              )}
+
+              {/* Result — same card as photo mode */}
+              {analysis && !analyzing && (
+                <div className={styles.analysisCard}>
+                  <div className={styles.analysisHeader}>
+                    <span>{analysis.isConfident ? '✅' : '⚠️'}</span>
+                    <p className={styles.analysisFood}>{analysis.identifiedFoodName}</p>
+                  </div>
+                  <p className={styles.analysisMeta}>
+                    ~{analysis.estimatedPortionGrams}g
+                    {analysis.caloriesPer100g > 0 && ` · ${analysis.caloriesPer100g} kcal/100g`}
+                  </p>
+                  {analysis.notes && <p className={styles.analysisNotes}>{analysis.notes}</p>}
+
+                  {analysis.wasAutoCreated && (
+                    <div className={styles.autoCreatedBadge}>
+                      ✨ Novo alimento adicionado ao catálogo automaticamente
+                    </div>
+                  )}
+                  {analysis.wasCatalogUpdated && (
+                    <div className={styles.autoCreatedBadge}>
+                      🔄 Pontuação do catálogo atualizada com os valores corretos
+                    </div>
+                  )}
+
+                  <div className={styles.matchBadge}>
+                    <span>{analysis.wasAutoCreated ? 'Criado:' : 'Encontrado:'}</span>
+                    <strong>{analysis.matchedFoodItemName}</strong>
+                    <span className={styles.matchPoints}>{calcPhotoPoints(analysis)}pts</span>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Meal time</label>
+                    <select style={selectStyle} value={photoMealTime} onChange={e => setPhotoMealTime(e.target.value)}>
+                      {MEAL_TIMES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+
+                  <Button style={{ width: '100%' }} disabled={adding} onClick={handlePhotoConfirm}>
+                    {adding ? 'Adding…' : 'Confirm & add to log'}
+                  </Button>
+
+                  <button type="button" className={styles.retakeBtn} onClick={resetPhoto}>
+                    Choose another photo
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ── SELECT mode ──────────────────────────────── */}
           {mode === 'select' && (
@@ -186,17 +271,26 @@ export default function FoodLogPage() {
             </>
           )}
 
+          {/* Always-mounted hidden inputs */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+          />
+          <input
+            ref={uploadInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+          />
+
           {/* ── PHOTO mode ───────────────────────────────── */}
           {mode === 'photo' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                style={{ display: 'none' }}
-                onChange={handleFileChange}
-              />
 
               {/* Upload area */}
               <div className={styles.photoUploadArea} onClick={() => fileInputRef.current?.click()}>
