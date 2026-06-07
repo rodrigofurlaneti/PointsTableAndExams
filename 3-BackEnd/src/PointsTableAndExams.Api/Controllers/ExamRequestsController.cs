@@ -9,6 +9,7 @@ using PointsTableAndExams.Application.ExamRequests.Queries.GetExamRequestById;
 namespace PointsTableAndExams.Api.Controllers;
 
 [Authorize]
+[Route("api/exam-requests")]
 public sealed class ExamRequestsController(IMediator mediator) : BaseApiController(mediator)
 {
     [HttpGet]
