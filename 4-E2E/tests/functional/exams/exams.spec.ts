@@ -32,14 +32,18 @@ test.describe('Exams — functional', () => {
   });
 
   // ── SubNav ───────────────────────────────────────────────────────
+  // ExamsPage (/exams) has SubNav: [My requests → /exams] [New request → /exams/requests]
+  // ExamRequestsPage (/exams/requests) has NO SubNav — it is a standalone form page.
   test('SubNav "New request" link navigates to /exams/requests', async ({ authenticatedPage: page }) => {
-    await page.getByRole('link', { name: /new request/i }).first().click();
+    const subNav = page.getByRole('navigation', { name: /exams sub-navigation/i });
+    await subNav.getByRole('link', { name: /new request/i }).click();
     await expect(page).toHaveURL(/\/exams\/requests/);
   });
 
-  test('SubNav "My requests" link stays on /exams', async ({ authenticatedPage: page }) => {
-    await page.goto('/exams/requests', { waitUntil: 'networkidle' });
-    await page.getByRole('link', { name: /my requests/i }).click();
+  test('SubNav "My requests" link is active on /exams', async ({ authenticatedPage: page }) => {
+    // Already on /exams from beforeEach — click "My requests" in the SubNav
+    const subNav = page.getByRole('navigation', { name: /exams sub-navigation/i });
+    await subNav.getByRole('link', { name: /my requests/i }).click();
     await expect(page).toHaveURL(/\/exams$/);
   });
 });

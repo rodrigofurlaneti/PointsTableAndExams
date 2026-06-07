@@ -24,12 +24,16 @@ test.describe('Food Log History — functional', () => {
 
   // ── SubNav navigation ────────────────────────────────────────────
   test('SubNav "Today" link navigates back to /food-log', async ({ authenticatedPage: page }) => {
-    await page.getByRole('link', { name: /^today$/i }).click();
+    // Scope to the SubNav to avoid ambiguity with footer links
+    const subNav = page.getByRole('navigation', { name: /food log sub-navigation/i });
+    await subNav.getByRole('link', { name: /^today$/i }).click();
     await expect(page).toHaveURL(/\/food-log$/);
   });
 
   test('SubNav "History" link is active (stays on /food-log/history)', async ({ authenticatedPage: page }) => {
-    await page.getByRole('link', { name: /^history$/i }).click();
+    // Scope to the SubNav — footer also has a "History" link
+    const subNav = page.getByRole('navigation', { name: /food log sub-navigation/i });
+    await subNav.getByRole('link', { name: /^history$/i }).click();
     await expect(page).toHaveURL(/\/food-log\/history/);
   });
 });
