@@ -33,6 +33,7 @@ export class LoginPage {
   }
 
   async expectRedirectedToDashboard() {
-    await expect(this.page).not.toHaveURL(/\/login/, { timeout: 15_000 });
+    // 60 s to tolerate Azure App Service cold starts
+    await expect(this.page).not.toHaveURL(/\/login/, { timeout: 60_000 });
   }
 }

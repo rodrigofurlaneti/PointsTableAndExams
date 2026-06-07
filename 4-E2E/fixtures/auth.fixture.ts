@@ -18,8 +18,9 @@ async function loginViaUI(page: Page) {
   await passwordField.fill(PASSWORD);
   await page.locator('button[type="submit"]').click();
 
-  // Wait until redirected away from /login
-  await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 20_000 });
+  // Wait until redirected away from /login.
+  // Timeout is 60 s to tolerate Azure App Service cold starts (~30-60 s).
+  await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 60_000 });
 }
 
 type AuthFixtures = {

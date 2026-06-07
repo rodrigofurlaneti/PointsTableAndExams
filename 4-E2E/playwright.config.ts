@@ -5,9 +5,10 @@ const BASE_URL = process.env.BASE_URL ?? 'https://gentle-field-0c117480f.7.azure
 
 export default defineConfig({
   testDir: './tests',
+  globalSetup: './global-setup.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 2 : 1,   // 1 retry locally handles transient cold-start failures
   workers: process.env.CI ? 2 : undefined,
 
   reporter: [
@@ -21,8 +22,8 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
-    actionTimeout:     15_000,
-    navigationTimeout: 30_000,
+    actionTimeout:     20_000,
+    navigationTimeout: 45_000,
   },
 
   expect: {
