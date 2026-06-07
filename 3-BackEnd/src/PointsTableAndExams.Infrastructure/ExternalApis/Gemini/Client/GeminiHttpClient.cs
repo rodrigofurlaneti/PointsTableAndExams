@@ -33,13 +33,7 @@ public sealed class GeminiHttpClient(
             Content = JsonContent.Create(request, options: JsonOptions)
         };
 
-        // AQ. prefix = OAuth2 access token → Authorization: Bearer
-        // AIza prefix = traditional API key  → X-goog-api-key
-        if (opts.ApiKey.StartsWith("AQ.", StringComparison.Ordinal))
-            httpRequest.Headers.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", opts.ApiKey);
-        else
-            httpRequest.Headers.Add("X-goog-api-key", opts.ApiKey);
+        httpRequest.Headers.Add("X-goog-api-key", opts.ApiKey);
 
         logger.LogDebug("Gemini request to {Url}", url);
 
