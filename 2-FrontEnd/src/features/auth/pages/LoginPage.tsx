@@ -31,7 +31,7 @@ export default function LoginPage() {
 
   return (
     <div className={styles.page}>
-      {isPending && <LoadingOverlay />
+      {isPending && <LoadingOverlay />}
       <div className={styles.card}>
         <div className={styles.header}>
           <h1 className={styles.logo}>Vita<span style={{ color: '#34d399' }}>Log</span></h1>
