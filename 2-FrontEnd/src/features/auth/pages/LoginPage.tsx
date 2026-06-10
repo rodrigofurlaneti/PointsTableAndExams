@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Input } from '../../../design-system/components/Input/Input';
 import { Button } from '../../../design-system/components/Button/Button';
 import { useLogin } from '../hooks/useLogin';
+import { LoadingOverlay } from '../../../shared/components/LoadingOverlay';
 import styles from './LoginPage.module.css';
 
 const schema = z.object({
@@ -30,6 +31,7 @@ export default function LoginPage() {
 
   return (
     <div className={styles.page}>
+      {isPending && <LoadingOverlay />
       <div className={styles.card}>
         <div className={styles.header}>
           <h1 className={styles.logo}>Vita<span style={{ color: '#34d399' }}>Log</span></h1>
