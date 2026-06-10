@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../../core/auth/authStore';
 import { useTodayLog } from '../../food-log/hooks/useFoodLog';
 import { useMyExamRequests } from '../../exams/hooks/useExams';
@@ -11,6 +12,7 @@ const DAILY_LIMIT = 300;
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const firstName = user?.fullName?.split(' ')[0] ?? 'there';
 
   const { data: todayLog } = useTodayLog();
@@ -29,9 +31,9 @@ export default function DashboardPage() {
       {/* ── Hero dark tile ───────────────────────────────── */}
       <section className={styles.hero}>
         <div className={styles.heroInner}>
-          <p className={styles.greeting}>Good day, {firstName}.</p>
-          <h1 className={styles.heroTitle}>Your Health Dashboard</h1>
-          <p className={styles.heroSub}>Track what you eat. Stay on top of your exams.</p>
+          <p className={styles.greeting}>{t('dashboard.greeting', { name: firstName })}</p>
+          <h1 className={styles.heroTitle}>{t('dashboard.heroTitle')}</h1>
+          <p className={styles.heroSub}>{t('dashboard.heroSub')}</p>
         </div>
       </section>
 
@@ -39,7 +41,7 @@ export default function DashboardPage() {
       <section className={styles.statsSection}>
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
-            <p className={styles.statLabel}>Today's Points</p>
+            <p className={styles.statLabel}>{t('dashboard.todayPoints')}</p>
             <p className={styles.statValue}>
               {todayPoints} <span className={styles.statUnit}>/ {DAILY_LIMIT}</span>
             </p>
@@ -48,11 +50,11 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className={styles.statCard}>
-            <p className={styles.statLabel}>Food items today</p>
+            <p className={styles.statLabel}>{t('dashboard.foodItemsToday')}</p>
             <p className={styles.statValue}>{todayItems}</p>
           </div>
           <div className={styles.statCard}>
-            <p className={styles.statLabel}>Pending exams</p>
+            <p className={styles.statLabel}>{t('dashboard.pendingExams')}</p>
             <p className={styles.statValue}>{pendingExams}</p>
           </div>
         </div>
@@ -61,22 +63,22 @@ export default function DashboardPage() {
       {/* ── Quick actions (parchment tile) ────────────────── */}
       <section className={styles.actionsSection}>
         <div className={styles.actionsInner}>
-          <h2 className={styles.sectionTitle}>What would you like to do?</h2>
+          <h2 className={styles.sectionTitle}>{t('dashboard.whatToDo')}</h2>
           <div className={styles.cardsGrid}>
             <StoreCard
-              name="Log today's food"
-              meta="Record meals and track daily points"
-              cta={<Button variant="secondary" onClick={() => navigate('/food-log')}>Open Food Log</Button>}
+              name={t('dashboard.logFood')}
+              meta={t('dashboard.logFoodMeta')}
+              cta={<Button variant="secondary" onClick={() => navigate('/food-log')}>{t('dashboard.openFoodLog')}</Button>}
             />
             <StoreCard
-              name="View exam requests"
-              meta="Check pending and completed exams"
-              cta={<Button variant="secondary" onClick={() => navigate('/exams')}>Go to Exams</Button>}
+              name={t('dashboard.viewExams')}
+              meta={t('dashboard.viewExamsMeta')}
+              cta={<Button variant="secondary" onClick={() => navigate('/exams')}>{t('dashboard.goToExams')}</Button>}
             />
             <StoreCard
-              name="Points history"
-              meta="Browse your daily points over time"
-              cta={<Button variant="secondary" onClick={() => navigate('/food-log/history')}>View History</Button>}
+              name={t('dashboard.pointsHistory')}
+              meta={t('dashboard.pointsHistoryMeta')}
+              cta={<Button variant="secondary" onClick={() => navigate('/food-log/history')}>{t('dashboard.viewHistory')}</Button>}
             />
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { SubNav } from '../../../design-system/components/Nav/SubNav';
 import { Spinner } from '../../../shared/components/Spinner';
 import { useFoodLogHistory } from '../hooks/useFoodLog';
@@ -5,14 +6,15 @@ import styles from './FoodLogPage.module.css';
 
 export default function FoodLogHistoryPage() {
   const { data = [], isLoading } = useFoodLogHistory();
+  const { t, i18n } = useTranslation();
 
   return (
     <div className={styles.page}>
-      <SubNav category="Food Log" links={[{ label: 'Today', to: '/food-log' }, { label: 'History', to: '/food-log/history' }]} />
+      <SubNav category={t('nav.foodLog')} links={[{ label: t('foodLog.title'), to: '/food-log' }, { label: t('history.title'), to: '/food-log/history' }]} />
 
       <div className={styles.hero}>
-        <h1 className={styles.title}>Points History</h1>
-        <p className={styles.dateBar}>Your daily point consumption over time</p>
+        <h1 className={styles.title}>{t('history.title')}</h1>
+        <p className={styles.dateBar}>{t('history.subtitle')}</p>
       </div>
 
       <div style={{ maxWidth: 980, margin: '0 auto', padding: 'var(--space-xl) var(--space-lg)' }}>
@@ -20,18 +22,18 @@ export default function FoodLogHistoryPage() {
           <Spinner />
         ) : data.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'var(--color-ink-muted-48)', padding: 'var(--space-xxl)' }}>
-            No history yet.
+            {t('history.noHistory')}
           </p>
         ) : (
           <div className={styles.list}>
-            <div className={styles.listHeader}>All logged days</div>
+            <div className={styles.listHeader}>{t('history.allDays')}</div>
             {data.map((row) => (
               <div key={row.logDate} className={styles.listItem}>
                 <div style={{ flex: 1 }}>
                   <p className={styles.itemName}>
-                    {new Date(row.logDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    {new Date(row.logDate).toLocaleDateString(i18n.language, { weekday: 'short', month: 'short', day: 'numeric' })}
                   </p>
-                  <p className={styles.itemMeta}>{row.foodItemCount} food items</p>
+                  <p className={styles.itemMeta}>{t('history.foodItems', { count: row.foodItemCount })}</p>
                 </div>
                 <span className={styles.itemPoints}>{row.totalPoints}pts</span>
               </div>

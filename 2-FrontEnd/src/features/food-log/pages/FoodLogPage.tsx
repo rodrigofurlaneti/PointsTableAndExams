@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { SubNav } from '../../../design-system/components/Nav/SubNav';
 import { Input } from '../../../design-system/components/Input/Input';
 import { Button } from '../../../design-system/components/Button/Button';
@@ -39,6 +40,7 @@ export default function FoodLogPage() {
   const [photoMealTime, setPhotoMealTime] = useState('12:00');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
+  const { t, i18n } = useTranslation();
 
   const { data: log, isLoading: logLoading } = useTodayLog();
   const { data: foodItems = [] } = useFoodItems(search || undefined);
@@ -50,7 +52,7 @@ export default function FoodLogPage() {
     defaultValues: { quantity: 1, mealTime: '12:00' },
   });
 
-  const today = new Date().toLocaleDateString('en-US', {
+  const today = new Date().toLocaleDateString(i18n.language, {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
@@ -115,10 +117,10 @@ export default function FoodLogPage() {
 
   return (
     <div className={styles.page}>
-      <SubNav category="Food Log" />
+      <SubNav category={t('nav.foodLog')} />
 
       <div className={styles.hero}>
-        <h1 className={styles.title}>Daily Food Log</h1>
+        <h1 className={styles.title}>{t('foodLog.title')}</h1>
         <p className={styles.dateBar}>{today}</p>
         {log && (
           <div className={styles.pointsBadge}>
@@ -131,7 +133,7 @@ export default function FoodLogPage() {
       <div className={styles.body}>
         {/* ── Add item panel ─────────────────────────────── */}
         <div className={styles.panel}>
-          <p className={styles.panelTitle}>Add food item</p>
+          <p className={styles.panelTitle}>{t('foodLog.addItem')}</p>
 
           {/* Mode toggle */}
           <div className={styles.modeToggle}>
@@ -140,21 +142,21 @@ export default function FoodLogPage() {
               className={`${styles.modeBtn} ${mode === 'select' ? styles.modeBtnActive : ''}`}
               onClick={() => setMode('select')}
             >
-              📋 Select
+              {t('foodLog.modeSelect')}
             </button>
             <button
               type="button"
               className={`${styles.modeBtn} ${mode === 'photo' ? styles.modeBtnActive : ''}`}
               onClick={() => { setMode('photo'); resetPhoto(); }}
             >
-              📷 Camera
+              {t('foodLog.modeCamera')}
             </button>
             <button
               type="button"
               className={`${styles.modeBtn} ${mode === 'upload' ? styles.modeBtnActive : ''}`}
               onClick={() => { setMode('upload'); resetPhoto(); }}
             >
-              🖼️ Gallery
+              {t('foodLog.modeGallery')}
             </button>
           </div>
 
@@ -169,7 +171,7 @@ export default function FoodLogPage() {
                 ) : (
                   <>
                     <span className={styles.photoIcon}>🖼️</span>
-                    <p className={styles.photoHint}>Tap to choose a photo from your device</p>
+                    <p className={styles.photoHint}>{t('foodLog.tapToGallery')}</p>
                     <p className={styles.photoCaption}>jpg · png · webp</p>
                   </>
                 )}
@@ -180,7 +182,7 @@ export default function FoodLogPage() {
                 <div className={styles.analysisCard}>
                   <Spinner />
                   <p style={{ color: 'var(--color-ink-muted-48)', fontSize: 'var(--text-caption)', textAlign: 'center', marginTop: 8 }}>
-                    Analyzing your photo…
+                    {t('foodLog.analyzing')}
                   </p>
                 </div>
               )}
@@ -200,34 +202,34 @@ export default function FoodLogPage() {
 
                   {analysis.wasAutoCreated && (
                     <div className={styles.autoCreatedBadge}>
-                      ✨ Novo alimento adicionado ao catálogo automaticamente
+                      {t('foodLog.autoCreated')}
                     </div>
                   )}
                   {analysis.wasCatalogUpdated && (
                     <div className={styles.autoCreatedBadge}>
-                      🔄 Pontuação do catálogo atualizada com os valores corretos
+                      {t('foodLog.catalogUpdated')}
                     </div>
                   )}
 
                   <div className={styles.matchBadge}>
-                    <span>{analysis.wasAutoCreated ? 'Criado:' : 'Encontrado:'}</span>
+                    <span>{analysis.wasAutoCreated ? t('foodLog.created') : t('foodLog.found')}</span>
                     <strong>{analysis.matchedFoodItemName}</strong>
                     <span className={styles.matchPoints}>{calcPhotoPoints(analysis)}pts</span>
                   </div>
 
                   <div>
-                    <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Meal time</label>
+                    <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>{t('foodLog.mealTime')}</label>
                     <select style={selectStyle} value={photoMealTime} onChange={e => setPhotoMealTime(e.target.value)}>
                       {MEAL_TIMES.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
 
                   <Button style={{ width: '100%' }} disabled={adding} onClick={handlePhotoConfirm}>
-                    {adding ? 'Adding…' : 'Confirm & add to log'}
+                    {adding ? t('foodLog.adding') : t('foodLog.confirmAdd')}
                   </Button>
 
                   <button type="button" className={styles.retakeBtn} onClick={resetPhoto}>
-                    Choose another photo
+                    {t('foodLog.chooseAnother')}
                   </button>
                 </div>
               )}
@@ -238,16 +240,16 @@ export default function FoodLogPage() {
           {mode === 'select' && (
             <>
               <Input
-                label="Search food"
-                placeholder="e.g. Rice, Apple…"
+                label={t('foodLog.searchFood')}
+                placeholder={t('foodLog.searchPlaceholder')}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
               <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
                 <div>
-                  <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Food item</label>
+                  <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>{t('foodLog.foodItem')}</label>
                   <select style={selectStyle} {...register('foodItemId')} onChange={(e) => { register('foodItemId').onChange(e); handleFoodSelect(e); }}>
-                    <option value="">Select…</option>
+                    <option value="">{t('foodLog.selectFood')}</option>
                     {foodItems.map(fi => (
                       <option key={fi.id} value={fi.id}>{fi.name} — {fi.points}pts{fi.servingSize ? ` (${fi.servingSize})` : ''}</option>
                     ))}
@@ -255,17 +257,17 @@ export default function FoodLogPage() {
                   {errors.foodItemId && <p style={{ color: '#d70015', fontSize: 'var(--text-caption)', marginTop: 4 }}>{errors.foodItemId.message}</p>}
                 </div>
 
-                <Input label="Quantity" type="number" min={0.5} max={20} step={0.5} error={errors.quantity?.message} {...register('quantity')} />
+                <Input label={t('foodLog.quantity')} type="number" min={0.5} max={20} step={0.5} error={errors.quantity?.message} {...register('quantity')} />
 
                 <div>
-                  <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Meal time</label>
+                  <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>{t('foodLog.mealTime')}</label>
                   <select style={selectStyle} {...register('mealTime')}>
                     {MEAL_TIMES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
 
                 <Button type="submit" disabled={adding} style={{ width: '100%' }}>
-                  {adding ? 'Adding…' : 'Add item'}
+                  {adding ? t('foodLog.adding') : t('foodLog.addButton')}
                 </Button>
               </form>
             </>
@@ -299,7 +301,7 @@ export default function FoodLogPage() {
                 ) : (
                   <>
                     <span className={styles.photoIcon}>📷</span>
-                    <p className={styles.photoHint}>Tap to take or upload a photo</p>
+                    <p className={styles.photoHint}>{t('foodLog.tapToPhoto')}</p>
                     <p className={styles.photoCaption}>jpg · png · webp</p>
                   </>
                 )}
@@ -310,7 +312,7 @@ export default function FoodLogPage() {
                 <div className={styles.analysisCard}>
                   <Spinner />
                   <p style={{ color: 'var(--color-ink-muted-48)', fontSize: 'var(--text-caption)', textAlign: 'center', marginTop: 8 }}>
-                    Analyzing your photo…
+                    {t('foodLog.analyzing')}
                   </p>
                 </div>
               )}
@@ -330,34 +332,34 @@ export default function FoodLogPage() {
 
                   {analysis.wasAutoCreated && (
                     <div className={styles.autoCreatedBadge}>
-                      ✨ Novo alimento adicionado ao catálogo automaticamente
+                      {t('foodLog.autoCreated')}
                     </div>
                   )}
                   {analysis.wasCatalogUpdated && (
                     <div className={styles.autoCreatedBadge}>
-                      🔄 Pontuação do catálogo atualizada com os valores corretos
+                      {t('foodLog.catalogUpdated')}
                     </div>
                   )}
 
                   <div className={styles.matchBadge}>
-                    <span>{analysis.wasAutoCreated ? 'Criado:' : 'Encontrado:'}</span>
+                    <span>{analysis.wasAutoCreated ? t('foodLog.created') : t('foodLog.found')}</span>
                     <strong>{analysis.matchedFoodItemName}</strong>
                     <span className={styles.matchPoints}>{calcPhotoPoints(analysis)}pts</span>
                   </div>
 
                   <div>
-                    <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>Meal time</label>
+                    <label style={{ fontSize: 'var(--text-caption-strong)', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: 4 }}>{t('foodLog.mealTime')}</label>
                     <select style={selectStyle} value={photoMealTime} onChange={e => setPhotoMealTime(e.target.value)}>
                       {MEAL_TIMES.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
 
                   <Button style={{ width: '100%' }} disabled={adding} onClick={handlePhotoConfirm}>
-                    {adding ? 'Adding…' : 'Confirm & add to log'}
+                    {adding ? t('foodLog.adding') : t('foodLog.confirmAdd')}
                   </Button>
 
                   <button type="button" className={styles.retakeBtn} onClick={resetPhoto}>
-                    Try another photo
+                    {t('foodLog.retakePhoto')}
                   </button>
                 </div>
               )}
@@ -367,9 +369,9 @@ export default function FoodLogPage() {
 
         {/* ── Today's items ──────────────────────────────── */}
         <div className={styles.list}>
-          <div className={styles.listHeader}>Today's items ({log?.items.length ?? 0})</div>
+          <div className={styles.listHeader}>{t('foodLog.todayItems', { count: log?.items.length ?? 0 })}</div>
           {logLoading ? <Spinner /> : !log || log.items.length === 0 ? (
-            <p className={styles.emptyState}>No items yet. Add your first meal above.</p>
+            <p className={styles.emptyState}>{t('foodLog.noItems')}</p>
           ) : (
             log.items.map(item => (
               <div key={item.id} className={styles.listItem}>

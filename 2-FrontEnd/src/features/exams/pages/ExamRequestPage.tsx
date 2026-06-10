@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { SubNav } from '../../../design-system/components/Nav/SubNav';
 import { Input } from '../../../design-system/components/Input/Input';
 import { Button } from '../../../design-system/components/Button/Button';
@@ -22,6 +23,7 @@ export default function ExamRequestPage() {
   const { data: exams = [], isLoading } = useAllExams();
   const { mutate: createRequest, isPending } = useCreateExamRequest();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -43,7 +45,6 @@ export default function ExamRequestPage() {
     );
   };
 
-  // Group exams by category
   const grouped = exams.reduce<Record<string, typeof exams>>((acc, exam) => {
     const cat = exam.categoryName;
     if (!acc[cat]) acc[cat] = [];
@@ -54,29 +55,27 @@ export default function ExamRequestPage() {
   return (
     <div className={styles.page}>
       <SubNav
-        category="Exams"
-        links={[{ label: 'My requests', to: '/exams' }, { label: 'New request', to: '/exams/requests' }]}
+        category={t('nav.exams')}
+        links={[{ label: t('examRequest.myRequests'), to: '/exams' }, { label: t('examRequest.newRequest'), to: '/exams/requests' }]}
       />
 
       <div className={styles.hero}>
-        <h1 className={styles.title}>New Exam Request</h1>
-        <p className={styles.subtitle}>Select the exams your doctor requested</p>
+        <h1 className={styles.title}>{t('examRequest.title')}</h1>
+        <p className={styles.subtitle}>{t('examRequest.subtitle')}</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className={styles.body}>
-          {/* Doctor info */}
           <div style={{ background: 'var(--color-canvas)', border: '1px solid var(--color-hairline)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-            <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>Doctor information</h2>
-            <Input label="Doctor name" error={errors.doctorName?.message} {...register('doctorName')} />
-            <Input label="Notes (optional)" {...register('notes')} />
+            <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>{t('examRequest.doctorInfo')}</h2>
+            <Input label={t('examRequest.doctorName')} error={errors.doctorName?.message} {...register('doctorName')} />
+            <Input label={t('examRequest.notes')} {...register('notes')} />
           </div>
 
-          {/* Exam selection */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-lg)' }}>
               <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>
-                Select exams <span style={{ color: 'var(--color-primary)' }}>({selectedIds.size})</span>
+                {t('examRequest.selectExams')} <span style={{ color: 'var(--color-primary)' }}>({selectedIds.size})</span>
               </h2>
             </div>
 
@@ -107,14 +106,13 @@ export default function ExamRequestPage() {
             )}
           </div>
 
-          {/* Submit */}
           <div style={{ position: 'sticky', bottom: 16, display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-md)' }}>
             <Button
               type="submit"
               disabled={isPending || selectedIds.size === 0}
               style={{ minWidth: 200 }}
             >
-              {isPending ? 'Creating…' : `Create request (${selectedIds.size} exams)`}
+              {isPending ? t('examRequest.creating') : t('examRequest.createButton', { count: selectedIds.size })}
             </Button>
           </div>
         </div>

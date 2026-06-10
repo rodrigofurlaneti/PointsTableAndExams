@@ -1,22 +1,20 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../../core/auth/authStore';
 import { Button } from '../Button/Button';
+import { LanguageSwitcher } from '../../../shared/components/LanguageSwitcher';
 import styles from './GlobalNav.module.css';
-
-interface NavLink {
-  label: string;
-  to: string;
-}
-
-const NAV_LINKS: NavLink[] = [
-  { label: 'Dashboard', to: '/dashboard' },
-  { label: 'Food Log',  to: '/food-log' },
-  { label: 'Exams',    to: '/exams' },
-];
 
 export function GlobalNav() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const NAV_LINKS = [
+    { label: t('nav.dashboard'), to: '/dashboard' },
+    { label: t('nav.foodLog'),   to: '/food-log' },
+    { label: t('nav.exams'),     to: '/exams' },
+  ];
 
   const handleLogout = () => {
     logout();
@@ -41,18 +39,19 @@ export function GlobalNav() {
         )}
 
         <div className={styles.actions}>
+          <LanguageSwitcher />
           {isAuthenticated ? (
             <>
               <span className={styles.link} style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {user?.fullName?.split(' ')[0]}
               </span>
               <Button variant="dark" onClick={handleLogout}>
-                Sign Out
+                {t('nav.signOut')}
               </Button>
             </>
           ) : (
             <Button variant="dark" onClick={() => navigate('/login')}>
-              Sign In
+              {t('nav.signIn')}
             </Button>
           )}
         </div>

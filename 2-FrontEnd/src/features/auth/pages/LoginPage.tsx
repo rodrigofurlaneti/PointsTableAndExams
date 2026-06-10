@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Input } from '../../../design-system/components/Input/Input';
 import { Button } from '../../../design-system/components/Button/Button';
 import { useLogin } from '../hooks/useLogin';
@@ -17,6 +18,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
   const { mutate: login, isPending, error } = useLogin();
+  const { t } = useTranslation();
 
   const {
     register,
@@ -35,7 +37,7 @@ export default function LoginPage() {
       <div className={styles.card}>
         <div className={styles.header}>
           <h1 className={styles.logo}>Vita<span style={{ color: '#34d399' }}>Log</span></h1>
-          <p className={styles.subtitle}>Your health. Tracked.</p>
+          <p className={styles.subtitle}>{t('login.subtitle')}</p>
         </div>
 
         {apiError && (
@@ -46,14 +48,14 @@ export default function LoginPage() {
 
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
           <Input
-            label="Username or Email"
+            label={t('login.usernameOrEmail')}
             type="text"
             autoComplete="username"
             error={errors.usernameOrEmail?.message}
             {...register('usernameOrEmail')}
           />
           <Input
-            label="Password"
+            label={t('login.password')}
             type="password"
             autoComplete="current-password"
             error={errors.password?.message}
@@ -62,14 +64,14 @@ export default function LoginPage() {
 
           <div className={styles.actions}>
             <Button type="submit" disabled={isPending} style={{ width: '100%' }}>
-              {isPending ? 'Signing in…' : 'Sign in'}
+              {isPending ? t('login.signingIn') : t('login.signIn')}
             </Button>
           </div>
         </form>
 
         <p className={styles.register}>
-          Don't have an account?{' '}
-          <Link to="/register">Create one</Link>
+          {t('login.noAccount')}{' '}
+          <Link to="/register">{t('login.createOne')}</Link>
         </p>
       </div>
     </div>
