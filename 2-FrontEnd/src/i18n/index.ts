@@ -6,9 +6,9 @@ import ptBR from './locales/pt-BR';
 import es from './locales/es';
 
 export const SUPPORTED_LANGS = [
-  { code: 'en',    label: 'EN', flag: '🇺🇸' },
-  { code: 'pt-BR', label: 'PT', flag: '🇧🇷' },
-  { code: 'es',    label: 'ES', flag: '🇪🇸' },
+  { code: 'en',    label: 'EN', flagCode: 'us' },
+  { code: 'pt-BR', label: 'PT', flagCode: 'br' },
+  { code: 'es',    label: 'ES', flagCode: 'es' },
 ] as const;
 
 export type LangCode = typeof SUPPORTED_LANGS[number]['code'];

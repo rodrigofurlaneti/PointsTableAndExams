@@ -26,8 +26,11 @@
 }
 
 .flag {
-  font-size: 14px;
-  line-height: 1;
+  width: 16px;
+  height: 12px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 .btn:hover {

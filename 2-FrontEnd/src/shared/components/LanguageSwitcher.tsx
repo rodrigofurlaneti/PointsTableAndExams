@@ -8,7 +8,7 @@ export function LanguageSwitcher() {
 
   return (
     <div className={styles.switcher} role="group" aria-label="Language">
-      {SUPPORTED_LANGS.map(({ code, label, flag }) => (
+      {SUPPORTED_LANGS.map(({ code, label, flagCode }) => (
         <button
           key={code}
           className={`${styles.btn} ${current === code ? styles.active : ''}`}
@@ -16,7 +16,14 @@ export function LanguageSwitcher() {
           aria-pressed={current === code}
           aria-label={`Switch to ${label}`}
         >
-          <span className={styles.flag}>{flag}</span>
+          <img
+            src={`https://flagcdn.com/w20/${flagCode}.png`}
+            srcSet={`https://flagcdn.com/w40/${flagCode}.png 2x`}
+            width="16"
+            height="12"
+            alt={label}
+            className={styles.flag}
+          />
           {label}
         </button>
       ))}
