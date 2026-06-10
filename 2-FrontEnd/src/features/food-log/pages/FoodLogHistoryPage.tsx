@@ -10,7 +10,7 @@ export default function FoodLogHistoryPage() {
 
   return (
     <div className={styles.page}>
-      <SubNav category={t('nav.foodLog')} links={[{ label: t('foodLog.title'), to: '/food-log' }, { label: t('history.title'), to: '/food-log/history' }]} />
+      <SubNav category={t('nav.foodLog')} links={[{ label: t('foodLog.subnavToday'), to: '/food-log' }, { label: t('foodLog.subnavHistory'), to: '/food-log/history' }]} />
 
       <div className={styles.hero}>
         <h1 className={styles.title}>{t('history.title')}</h1>

@@ -55,6 +55,8 @@ const es = {
   },
   foodLog: {
     title: 'Diario Alimentario del Día',
+    subnavToday: 'Hoy',
+    subnavHistory: 'Historial',
     addItem: 'Agregar alimento',
     modeSelect: '📋 Seleccionar',
     modeCamera: '📷 Cámara',

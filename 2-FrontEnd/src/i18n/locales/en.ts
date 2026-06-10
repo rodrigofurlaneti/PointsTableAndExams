@@ -60,6 +60,8 @@ const en = {
   // Food Log
   foodLog: {
     title: 'Daily Food Log',
+    subnavToday: 'Today',
+    subnavHistory: 'History',
     addItem: 'Add food item',
     modeSelect: '📋 Select',
     modeCamera: '📷 Camera',
