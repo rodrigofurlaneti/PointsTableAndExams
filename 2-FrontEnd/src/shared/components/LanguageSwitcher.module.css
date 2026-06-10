@@ -8,6 +8,9 @@
 }
 
 .btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-text);
   font-size: 11px;
   font-weight: 400;
@@ -19,6 +22,11 @@
   padding: 4px 9px;
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+
+.flag {
+  font-size: 14px;
   line-height: 1;
 }
 

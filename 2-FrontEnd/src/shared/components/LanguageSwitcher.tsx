@@ -8,14 +8,15 @@ export function LanguageSwitcher() {
 
   return (
     <div className={styles.switcher} role="group" aria-label="Language">
-      {SUPPORTED_LANGS.map(({ code, label }) => (
+      {SUPPORTED_LANGS.map(({ code, label, flag }) => (
         <button
           key={code}
-          className={`${styles.btn} ${current === code || current.startsWith(code.split('-')[0]) && code === current ? styles.active : ''} ${current === code ? styles.active : ''}`}
+          className={`${styles.btn} ${current === code ? styles.active : ''}`}
           onClick={() => i18n.changeLanguage(code)}
           aria-pressed={current === code}
           aria-label={`Switch to ${label}`}
         >
+          <span className={styles.flag}>{flag}</span>
           {label}
         </button>
       ))}
